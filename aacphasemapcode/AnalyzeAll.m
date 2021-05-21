@@ -6,20 +6,20 @@ launchDirNforAACSessions % dirN
 % % % get OptMod
 % % % % % % % % % % % % % % % % % % % %
 
-% % Maybe replace this with obtaining the modulation from the CellExplorer
+% % Replaced this with obtaining the modulation from the CellExplorer
 
-
-for iSess = 1:length(dirN)
-    selectedSession = dirN{iSess};
-    cd(selectedSession)
-    
-    %         optmod = getOptoStim_Kaiser_edit(selectedSession,false, 'ait', 'on', 'off');
-    optmod = getOptoStim_Kaiser_edit(selectedSession,false, 'ait', 'start', 'stop');
-    
-    
-    % GetCellParams(dirN{i}, basename) % this takes a loooooong time
-    %( + you compute a monores in STP for good epochs only so maybe this is redundant)
-    
+% % % 
+% % % for iSess = 1:length(dirN)
+% % %     selectedSession = dirN{iSess};
+% % %     cd(selectedSession)
+% % %     
+% % %     %         optmod = getOptoStim_Kaiser_edit(selectedSession,false, 'ait', 'on', 'off');
+% % %     optmod = getOptoStim_Kaiser_edit(selectedSession,false, 'ait', 'start', 'stop');
+% % %     
+% % %     
+% % %     % GetCellParams(dirN{i}, basename) % this takes a loooooong time
+% % %     %( + you compute a monores in STP for good epochs only so maybe this is redundant)
+% % %     
 end
 
 
