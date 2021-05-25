@@ -114,4 +114,3 @@ if saveMat
     save([basename '.rates.analysis.mat'],'rate')
 end
 end
-    
