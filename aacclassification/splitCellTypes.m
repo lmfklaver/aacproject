@@ -1,13 +1,12 @@
 function [pyrs, ints, aacs] = splitCellTypes(basepath)
 % This function splits PYRs, INTs and AACs using cellexplorer and
-% optotagging as classifiers 
+% optotagging as classifiers
 %
-%   USAGE 
+%   USAGE
 %
-%   Dependencies: 
-%   Buzcode, Englishlab\utilities,spikes.cellinfo.mat,
-%   optoStim.manipulation.mat, cell_metrics.cellinfo.mat,
-%    zeta mat file.
+%   Dependencies:
+%   Buzcode, spikes.cellinfo.mat, optoStim.manipulation.mat, cell_metrics.cellinfo.mat,
+%   zeta mat stats file.
 %
 %   INPUTS
 %   basepath
@@ -19,18 +18,20 @@ function [pyrs, ints, aacs] = splitCellTypes(basepath)
 %   aacs    - indices for AACs
 %
 %   EXAMPLES
-%
+%   [pyrs, ints, aacs] = splitCellTypes(basepath);
 %
 %   NOTES
-%  
+%
 %
 %   TO-DO
 %   - maybe add an session.analysisTags for Opto ChR or Arch, considering the new animals are both ChR and Arch
-%   - allow stats input
+%   - allow stats input instead of loading in zeta
+%   - Take out Interneuron as criteria
 %
 %   HISTORY
- %  Updating this in AAC_PRoject, not in Utilties NB
-%% 
+%  Updating this in AAC_PRoject, not in Utilties NB
+%   
+%%
 
 cd(basepath)
 basename = bz_BasenameFromBasepath(cd);
@@ -39,20 +40,18 @@ load([basename '.spikes.cellinfo.mat'])
 load([basename '.optoStim.manipulation.mat'])
 load([basename '.cell_metrics.cellinfo.mat'])
 
-% load([basename '.dblZeta.mat'])
-% if no ZETA, calculate ZETA? 
+% if no ZETA, calculate ZETA? TO DO? Load other stats?"
 load([basename '.pethzeta.stats.mat'])
 
+% calculate baserate and stimrate over first 50 ms (pulsew = 0.05)
+[rate] = getRatesTrialsBaseStim(spikes, optoStim.timestamps, ...
+    'timwin', [-0.5 0.5],'binSize', 0.001,'pulsew',0.05);
 
-% timwin          = [-0.5 0.5];
-% options.binSize = 0.001;
-% options.stimWin = 0.05;
- 
-[rate] = getRatesTrialsBaseStim(spikes, optoStim.timestamps, 'timwin', [-0.5 0.5],'binSize', 0.001,'pulsew',0.05);
 baserate = rate.base;
 stimrate = rate.stim;
 
-STD_Val = 2;
+% update, because not all folders with "mouse" are ChR mice anymore with
+% padded sessions.
 
 if ~isempty(regexp(basename,'mouse', 'once')) % mouse-mice are excitation
     dblZetaPChR     = zeta.P;%dblZetaPChR100;
@@ -60,6 +59,7 @@ if ~isempty(regexp(basename,'mouse', 'once')) % mouse-mice are excitation
     for iUnit= 1:length(baserate)
         InclusionInd(iUnit) = mean(stimrate{iUnit}) > mean(baserate{iUnit});%+STD_Val*std(baserate{iUnit});
     end
+    % take out the classification of it needing to be an interneuron
     intsall = find(contains(cell_metrics.putativeCellType,'Interneuron'));
     aacs = getAACnums(cell_metrics,dblZetaPChR,'excitation',InclusionInd);
     intsind = ~ismember(intsall, aacs);

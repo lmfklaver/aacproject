@@ -1,21 +1,18 @@
 %% This script makes the summary plots for each AAC
 
 % Create a variable called dirN to loop over to make summary plots:
-
 launchDirNforAACSessions
 
 sessions = [1,2,3,4,5,8,9,16,17];% 17;%[8,9,16,17]; %1,2,3,4,5,
 
 % Sess 6 has pulse artifacts
-% Sess 7 is empty
+% Sess 7 needs to be checked, was copied over with an empty .dat initially
 % Sess 10, 11 and 12 have no good epochs %
 % Sess 13 has 200ms pulses
 % Sess 14 has no AACs
 
-
 %% Get all the gray dots for the theta phase x ripple mod plot via:
-getCumulRipModThetaPhase
-% requires a variable session
+getCumulRipModThetaPhase % requires a variable session to work
 
 
 %% Select which Subplots you want to plot in the Summary
@@ -33,11 +30,11 @@ doRippleLong    = false;
 doSave          = false;
 
 %% Start building the Figure
-                  
-for iSess = 3%sessions
+
+for iSess = 1%sessions
     
     cd(dirN{iSess})
-    basepath = cd; 
+    basepath = cd;
     basename = bz_BasenameFromBasepath(cd);
     
     
@@ -50,15 +47,15 @@ for iSess = 3%sessions
     load([basename '.spikes.cellinfo.mat']) % from buzcode
     load([basename '.mono_res.cellinfo.mat']) % through cellexplorer - unsure if used in current iteration
     
-    load([basename '.cell_metrics.cellinfo.mat']) % from cell explorer 
-%     load([basename '.ccginout.mat'])
+    load([basename '.cell_metrics.cellinfo.mat']) % from cell explorer
+    %     load([basename '.ccginout.mat'])
     load([basename '.ccginout.analysis.mat']) % through getCCGinout.m
     
     load([basename '.optoStim.manipulation.mat']) % from getPulseEpochs, through a wrapper
-%     load([basename '.dblZeta20_100_100.mat'])
-        load([basename '.pethzeta.stats.mat']) %through getZeta.m using ZETA toolbox
-
-     load([basename '.ph_mod.mat']) %through aacphasemapcode 
+    %     load([basename '.dblZeta20_100_100.mat'])
+    load([basename '.pethzeta.stats.mat']) %through getZeta.m using ZETA toolbox
+    
+    load([basename '.ph_mod.mat']) %through aacphasemapcode
     load([basename '.STP.mat']) % through aacphasemapcode
     load([basename '.ripples.events.mat']) % buzcode
     
@@ -73,25 +70,25 @@ for iSess = 3%sessions
     
     minRunLength = 3;
     minRunSpeed = 2;
-%     
-%         if exist([basename '.run.states.mat'],'file')
-%             load([basename '.run.states.mat'])
-%             minRunSpeed = run.detectorinfo.detectionparms.minRunSpeed
-%             selRunEpochs = run.epochs(run.epochs(:,2)-run.epochs(:,1)>=minRunLength,:);
-%     
-%         else
+    %
+    %         if exist([basename '.run.states.mat'],'file')
+    %             load([basename '.run.states.mat'])
+    %             minRunSpeed = run.detectorinfo.detectionparms.minRunSpeed
+    %             selRunEpochs = run.epochs(run.epochs(:,2)-run.epochs(:,1)>=minRunLength,:);
+    %
+    %         else
     load([basename '_analogin.mat'])
     selRunEpochs = [];
     
     if isfield(analogin,'pos')
         if doPETHRun
-%             if exist([basename '.run2cm.states.mat'], 'file')
-%                 load ([basename '.run2cm.states.mat'])
-%             else
-                
+            %             if exist([basename '.run2cm.states.mat'], 'file')
+            %                 load ([basename '.run2cm.states.mat'])
+            %             else
+            
             [vel] = getVelocity(analogin,'doFigure',false,'downsampleFactor',3000);
             [run] = getRunEpochs(basepath,vel,'minRunSpeed',minRunSpeed,'saveMat',true,'saveAs','.run2cm.states.mat');
-%             end
+            %             end
             
             selRunEpochs = run.epochs(run.epochs(:,2)-run.epochs(:,1)>=minRunLength,:);
         end
@@ -106,7 +103,7 @@ for iSess = 3%sessions
     % pulls the channel from the ripples and loads the xml file
     rippleChan = str2double(rip.description{1}(regexp(rip.description{1},'[0-9]')));
     lfp = bz_GetLFP(rippleChan);
-   
+    
     
     
     %%
@@ -123,6 +120,7 @@ for iSess = 3%sessions
         % % Waveform
         % % % % % % % % % % % % %
         if doWaveform
+            % CellExplorer does the intan conversion factor already
             subplot(6,4,1)
             xForWave = (1:length(cell_metrics.waveforms.raw{iAAC}))/30000*1000;
             plot(xForWave,cell_metrics.waveforms.raw{iAAC})%
@@ -141,8 +139,8 @@ for iSess = 3%sessions
         % % % % % % % % % % % % %
         
         if doACG
-                        subplot(6,4,5)
-
+            subplot(6,4,5)
+            
             ccg = ccginout.ccgOUT;
             t = ccginout.t;
             
@@ -151,45 +149,10 @@ for iSess = 3%sessions
             xlabel('time (s)')
             ylabel('rate')
             set(gca,'TickDir','out')
-        
-        title('ACG')
+            
+            title('ACG')
         end
         %%
-        % % % % % % % % % % % % %
-        % % ZETA
-        % % % % % % % % % % % % %
-        
-%         subplot(6,4,9)
-%         if doZETA
-%         if ~isempty(regexp(basename,'mouse', 'once'))
-%             ZetaP20 = dblZetaPChR20;
-%             ZetaP100 = dblZetaPChR100;
-%             
-%         elseif isempty(regexp(basename,'mouse', 'once'))
-%             ZetaP20 = dblZetaPArch20;
-%             ZetaP100 = dblZetaPArch100;
-%         end
-%         
-%         dotSize = 50;
-%         
-%         scatter(ZetaP20,ZetaP100,dotSize,[211/255,211/255,211/255],'filled')
-%         hold on
-%         scatter(ZetaP20(iAAC),ZetaP100(iAAC),dotSize,'m','filled')
-%         
-%         
-%         xlabel('p-value over 20ms');
-%         ylabel('p-value over 100ms');
-%         xlim([0 1])
-%         ylim([0 1])
-%         
-%         xline(0.05,':')
-%         yline(0.05,':')
-%         
-%         legend('boxoff')
-%         legend({'all neurons sess','selected AAC'},'Location','northeast','NumColumns',1);
-%         
-%         
-%         end
         
         
         %%
@@ -254,8 +217,8 @@ for iSess = 3%sessions
         % % % % % % % % % % % % %
         
         if doPETHRip
-           
-           subplot(6,4,3)
+            
+            subplot(6,4,3)
             
             load([basename '.ripples.events.mat'])
             if exist([basename '.ripplepeth.analysis.mat'],'file')
@@ -318,13 +281,13 @@ for iSess = 3%sessions
                 if isfield(analogin,'pos')
                     subplot(6,4,4)
                     
-%                     if exist([basename '.runpeth.analysis.mat'],'file')
-%                         load([basename '.runpeth.analysis.mat'])
-%                     else
-                        
-                        [peth] = getPETH_epochs(basepath,'epochs',selRunEpochs,...
-                            'timwin',[-5 5],'binSize',0.1,'saveAs','.runpeth2cm.analysis.mat');
-%                     end
+                    %                     if exist([basename '.runpeth.analysis.mat'],'file')
+                    %                         load([basename '.runpeth.analysis.mat'])
+                    %                     else
+                    
+                    [peth] = getPETH_epochs(basepath,'epochs',selRunEpochs,...
+                        'timwin',[-5 5],'binSize',0.1,'saveAs','.runpeth2cm.analysis.mat');
+                    %                     end
                     
                     rateRun   = peth.rate;
                     countRun  = peth.count;
@@ -343,36 +306,36 @@ for iSess = 3%sessions
                     h1.EdgeColor = 'none';
                     h1.FaceColor = 'k';
                 end
-            
-            
-            
-            %%
-            % % % % % % % % % % % % %
-            % % Raster RUN Onset
-            % % % % % % % % % % % % %
-            
-            subplot(6,4,[8,12])
-            
-            selTrialsRun = peth.trials{iAAC};
-            plotSpkOffset = 0;
-            
-            for iRun = 1:size(selRunEpochs,1)
-                selRunTr = selTrialsRun{iRun};
-                plot(selRunTr',repmat(plotSpkOffset,1,length(selRunTr)),'k.');
-                hold on
-                plotSpkOffset = plotSpkOffset+1;
+                
+                
+                
+                %%
+                % % % % % % % % % % % % %
+                % % Raster RUN Onset
+                % % % % % % % % % % % % %
+                
+                subplot(6,4,[8,12])
+                
+                selTrialsRun = peth.trials{iAAC};
+                plotSpkOffset = 0;
+                
+                for iRun = 1:size(selRunEpochs,1)
+                    selRunTr = selTrialsRun{iRun};
+                    plot(selRunTr',repmat(plotSpkOffset,1,length(selRunTr)),'k.');
+                    hold on
+                    plotSpkOffset = plotSpkOffset+1;
+                end
+                
+                
+                box off
+                set(gca,'ydir','reverse')
+                ylimits = get(gca,'YLim');
+                xlabel('time (s)')
+                ylabel('trials')
+                %             set(gca,'TickDir','out')
+                ylim([ylimits(1) plotSpkOffset])
+                xlim(peth.timwin)
             end
-            
-            
-            box off
-            set(gca,'ydir','reverse')
-            ylimits = get(gca,'YLim');
-            xlabel('time (s)')
-            ylabel('trials')
-            %             set(gca,'TickDir','out')
-            ylim([ylimits(1) plotSpkOffset])
-            xlim(peth.timwin)
-        end
         end
         
         
@@ -408,10 +371,6 @@ for iSess = 3%sessions
         h1 = imagesc(zscore(ccg(:,selCCGin,selCCGout)',[],2));
         %     h1 = imagesc((ccg(:,selCCGin,selCCGout)'));
         
-        % %         %
-        % %                 % ccg
-        % %         opts.ccgBinSize  = 0.001;
-        % %         opts.ccgDur      = 0.2;
         
         xIndVals = 1:100:201;% 401
         xlim([xIndVals(1) xIndVals(end)])
@@ -431,35 +390,35 @@ for iSess = 3%sessions
         % % % % % % % % % % % % %
         % % ZETA
         % % % % % % % % % % % % %
-%         subplot(6,4,9)
-%         if doZETA
-%         if ~isempty(regexp(basename,'mouse', 'once'))
-%             ZetaP20 = dblZetaPChR20;
-%             ZetaP100 = dblZetaPChR100;
-%             
-%         elseif isempty(regexp(basename,'mouse', 'once'))
-%             ZetaP20 = dblZetaPArch20;
-%             ZetaP100 = dblZetaPArch100;
-%         end
-%         
-%         dotSize = 50;
-%         
-%         scatter(ZetaP20,ZetaP100,dotSize,[211/255,211/255,211/255],'filled')
-%         hold on
-%         scatter(ZetaP20(iAAC),ZetaP100(iAAC),dotSize,'filled','m')
-%         
-%         
-%         xlabel('p over 20ms');
-%         ylabel('p over 100ms');
-%         xlim([0 1])
-%         ylim([0 1])
-%         
-%         xline(0.05,':')
-%         yline(0.05,':')
-%         
-%         
-%         legend({'all neurons sess','selected AAC'},'Location','northeast','NumColumns',1);
-%         end
+        %         subplot(6,4,9)
+        %         if doZETA
+        %         if ~isempty(regexp(basename,'mouse', 'once'))
+        %             ZetaP20 = dblZetaPChR20;
+        %             ZetaP100 = dblZetaPChR100;
+        %
+        %         elseif isempty(regexp(basename,'mouse', 'once'))
+        %             ZetaP20 = dblZetaPArch20;
+        %             ZetaP100 = dblZetaPArch100;
+        %         end
+        %
+        %         dotSize = 50;
+        %
+        %         scatter(ZetaP20,ZetaP100,dotSize,[211/255,211/255,211/255],'filled')
+        %         hold on
+        %         scatter(ZetaP20(iAAC),ZetaP100(iAAC),dotSize,'filled','m')
+        %
+        %
+        %         xlabel('p over 20ms');
+        %         ylabel('p over 100ms');
+        %         xlim([0 1])
+        %         ylim([0 1])
+        %
+        %         xline(0.05,':')
+        %         yline(0.05,':')
+        %
+        %
+        %         legend({'all neurons sess','selected AAC'},'Location','northeast','NumColumns',1);
+        %         end
         
         
         %%
@@ -491,7 +450,7 @@ for iSess = 3%sessions
         % Histogram Pref Theta Phase for each Spike
         % % % % % % % % % % % %
         subplot(6,4,23)
- 
+        
         %%
         % % % % % % % % % % % % %
         % % Ripple Mod x Theta Phase
@@ -543,9 +502,7 @@ for iSess = 3%sessions
             box off
             
         end
-        
-        
-        
+
         %%
         
         % % % % % % % % % % % % %
@@ -585,11 +542,11 @@ for iSess = 3%sessions
         % % % % % % % % % % % % %
         
         subplot(6,4,21)
-              if exist([basename '.ripspikes.analysis.mat'])
+        if exist([basename '.ripspikes.analysis.mat'])
             load([basename '.ripspikes.analysis.mat'])
         else
             
-        [spikesRipNum, numSpkPerCycPerRip] = getNumSpkRip(basepath,'units',aacs,'saveMat',true);
+            [spikesRipNum, numSpkPerCycPerRip] = getNumSpkRip(basepath,'units',aacs,'saveMat',true);
         end
         
         maxHistoRip = max(spikesRipNum{iAAC});
@@ -600,14 +557,14 @@ for iSess = 3%sessions
         ylabel('count')
         set(gca,'YScale','log','XTick',xtRip-0.5,'XTickLabel', num2cell(xtRip-0.5))
         box off
-       
+        
         %%
         % % % % % % % % % % % % %
         % %Ripple cycle spikes
         % % % % % % % % % % % % %
         subplot(6,4,22)
         
-  
+        
         edgesRip = 0:1:5;
         histogram(cell2mat(numSpkPerCycPerRip{iAAC}),edgesRip)
         xlabel('Avg Number of Spikes per Ripple Cycle')
@@ -647,16 +604,16 @@ for iSess = 3%sessions
         sgtitle({['Unit ' num2str(iSess) '_' num2str(spikes.UID(iAAC))]},'interpreter','none')
         
         if doSave
-        unitStr = ['D:\Data\SummaryPlot_AAC_' num2str(iSess) '_' num2str(iAAC)];
-        savefig(gcf,[unitStr '.fig'])
-        print(gcf,[unitStr '.pdf'],'-dpdf','-bestfit')
-%         append_pdfs(['E:\Dropbox\PD_Hpc\Progress\AAC\AAC_SummaryPlots_andCCG\SummaryPlot_AACs_20201218_speed2cms.pdf'],[unitStr '.pdf'])
-        append_pdfs(['E:\Dropbox\PD_Hpc\RerunSummaryPlots_AACs_20210302_speed2cms.pdf'],[unitStr '.pdf'])
-
-delete([unitStr '.pdf'])
-        close gcf
+            unitStr = ['D:\Data\SummaryPlot_AAC_' num2str(iSess) '_' num2str(iAAC)];
+            savefig(gcf,[unitStr '.fig'])
+            print(gcf,[unitStr '.pdf'],'-dpdf','-bestfit')
+            %         append_pdfs(['E:\Dropbox\PD_Hpc\Progress\AAC\AAC_SummaryPlots_andCCG\SummaryPlot_AACs_20201218_speed2cms.pdf'],[unitStr '.pdf'])
+            append_pdfs(['E:\Dropbox\PD_Hpc\RerunSummaryPlots_AACs_20210302_speed2cms.pdf'],[unitStr '.pdf'])
+            
+            delete([unitStr '.pdf'])
+            close gcf
         end
     end
 end
 
-    
+

@@ -4,8 +4,6 @@
 % % % theta phase and ripple modulation
 % % % % % % % % % % % % % % % % % % % % % % % %
 
-% NB: requires a sessions variable to work!
-
 plotCount = 0;
 figure
 
@@ -30,7 +28,7 @@ for iSess = sessions
     basename    = bz_BasenameFromBasepath(basepath);
     
     
-    load([basename '.STP.mat']) % made in getShort
+    load([basename '.STP.mat']) % 
     load([basename '.ph_mod.mat'])
     load([basename '.cell_metrics.cellinfo.mat'])
    

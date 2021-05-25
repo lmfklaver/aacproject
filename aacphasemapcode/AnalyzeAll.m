@@ -34,7 +34,7 @@ for iSess = 3%[1:5, 8, 9, 15:length(dirN)];
     basepath = cd;
     basename = bz_BasenameFromBasepath(cd);
 %     if regexp(basename,'mouse')%
-        STP = ShortTermPlasticity_axax(basepath)%,'excitation');
+        STP = ShortTermPlasticity_axax(basepath);%,'excitation');
 %     else
 %         STP = ShortTermPlasticity_axax(basepath)%,'inhibition');
 %     end
