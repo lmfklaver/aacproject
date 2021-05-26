@@ -7,7 +7,7 @@ function STP = ShortTermPlasticity_axax(basepath,varargin)
 %
 %
 %   USAGE
-%   run CellExplorer first, so there's a spikes.cluID field
+%   run CellExplorer first, so there's a spikes.cluID 
 %
 %   % Dependencies %
 %   Requires buzcode functions
@@ -44,7 +44,6 @@ function STP = ShortTermPlasticity_axax(basepath,varargin)
 %   Code originially written by Sam Mckenzie
 %   2020/10 Code addapted/ edited by Kaiser Arndt (7/12/20)
 %   2021/02 Lianne documented and edited this code further
-%   2021/05 Lianne comments
 %
 %   TO-DO
 %   - Make kp definition and input dependent on the optogenetic manipulation
