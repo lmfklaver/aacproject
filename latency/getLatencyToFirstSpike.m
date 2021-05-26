@@ -3,19 +3,22 @@ function LatencyFirstSpike = getLatencyToFirstSpike(spikeTrl_Pulse, pulseEpochs)
 % optostim
 %
 %   USAGE
-%   
+%   LatencyFirstSpike = getLatencyToFirstSpike(spikeTrl_Pulse, pulseEpochs)
 %
 %   Dependencies:
-%   Buzcode
+%   
 %
 %   INPUTS
-%   Name-value paired inputs:
+%   spkTrl_Pulse    - 
+%   pulseEpochs     - Nx2 matrix of start and stop times 
 %
 %
 %   OUTPUTS
+%     LatencyFirstSpike - Nx1 For each trial in PulseEpochs the latency that it
+%     took for the first spike to occur
 %
 %   EXAMPLES
-%
+%   LatencyFirstSpike = getLatencyToFirstSpike(peth.trials{iUnit},pulseEpochs)
 %
 %   NOTES
 %
