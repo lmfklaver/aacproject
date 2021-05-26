@@ -3,11 +3,12 @@ function [spikesRipNum, numSpkPerCycPerRip] = getNumSpkRip(basepath, varargin)
 %
 %
 %   USAGE
+%   [spikesRipNum, numSpkPerCycPerRip] = getNumSpkRip(basepath, <options>)
 %
-
 %
 %   INPUTS
-%   basepath
+%   basepath        - path that contains spikes.cellinfo.mat and
+%                      ripples.events.mat
 %
 %   Name-value paired inputs:
 %   'ripfrequency'  - Default [100 250]
@@ -16,8 +17,12 @@ function [spikesRipNum, numSpkPerCycPerRip] = getNumSpkRip(basepath, varargin)
 %   'units'         - Default 'all', optional numerical (e.g. AAC index)
 
 %   OUTPUT
+%   spikesRipNum    - number of total spikes in individual ripples
+%   numSpkPerCycPerRip - number of spikes in each ripplecycle for each
+%   individual ripple 
 %
 %   EXAMPLES
+%   [spikesRipNum, numSpkPerCycPerRip] = getNumSpkRip(basepath,'units',aacs,'saveMat',true);
 %
 %   NOTES
 %

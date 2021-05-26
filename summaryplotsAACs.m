@@ -107,7 +107,7 @@ for iSess = 1%sessions
     
     
     %%
-    for iAAC =27%aacs%1:length(spikes.times)
+    for iAAC =aacs%1:length(spikes.times)
         
         Fh = figure;
         set(gcf, 'Position', get(0, 'Screensize'));

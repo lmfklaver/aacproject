@@ -9,7 +9,7 @@ function [ccginout] = getCCGinout(basepath, epochs, varargin)
 %
 %
 %       INPUTS
-%       basepath            -
+%       basepath            - where spikes.cellinfo.mat is located
 %       epochs              - epochs to calculate CCG "in" and "out" of the epoch over
 %
 %       Name-Value Pairs
@@ -21,12 +21,12 @@ function [ccginout] = getCCGinout(basepath, epochs, varargin)
 
 %       OUTPUTS
 %       ccginout
-%         .ccgIN
-%         .ccgOUT
-%         .t
-%         .binSize
-%         .duration
-%         .normalization
+%         .ccgIN        - CCG for spikes within the epoch
+%         .ccgOUT       - CCG for spikes outside the epoch
+%         .t            - time for CCG
+%         .binSize      - input parameter
+%         .duration     - input parameter
+%         .normalization - input parameter
 %
 %
 %       EXAMPLES
@@ -38,7 +38,7 @@ function [ccginout] = getCCGinout(basepath, epochs, varargin)
 %
 %       TO-DO
 %       - Option to run it over a subset of clusters?
-%       - Move all parameters to .ccgparams.[var]
+%       - Move all parameters to .ccgparams.[var] ?
 
 
 %% Parse!

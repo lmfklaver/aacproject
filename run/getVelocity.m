@@ -3,19 +3,20 @@ function [vel] = getVelocity(analogin, varargin)
 % analogin.dat file.
 %
 %   USAGE
-%
+%   [vel] = getVelocity(analogin, <options>)
+%   
 %   %% Dependencies %%%
-%
+%   buzcode
 %
 %   INPUTS
-%   'analogin'  - output from getAnaloginVals.m
+%   'analogin'  - output variable from getAnaloginVals.m
 %
 %
 %   OUTPUTS
 %   vel
-%   .vel_cm_s    -
-%   .time        -
-%   .dt          -
+%   .vel_cm_s    - velocity in centimeters per second
+%   .time        - total time 
+%   .dt          - delta t of each vel point 
 %
 %   EXAMPLES
 %   [vel] = getVelocity(analogin, 'downsampleFactor',300,'circDisk',...
@@ -28,6 +29,8 @@ function [vel] = getVelocity(analogin, varargin)
 %
 %   TO-DO
 %   - why are the velocities so different for all the different sessions?
+%       we have tried something with the sgolay version, I'm seeing how to
+%       implement that here (LK 20210525)
 %   - do we need a dynamic threshold? plotting for threshold detection or
 %       something?
 
