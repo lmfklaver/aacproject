@@ -3,7 +3,7 @@ function [ph_mod] = getPhaseMap(basepath, varargin)
 % frequencies wanting to be analyzed
 %
 %   USAGE 
-%   [ph_mod] = getPhaseMap(basepath, <options>)
+%   [ph_mod] = getPhaseMap_Kaiser_edit(basepath, <options>)
 %
 %   Dependencies: Buzcode, Englishlab\utilities, output
 %   ShortTermPlasticity_axax
@@ -23,11 +23,10 @@ function [ph_mod] = getPhaseMap(basepath, varargin)
 %   'muaThres'      - MUA phase-locking threshold to verify that there is 
 %                   enough power (Default: 0.05)
 %   'nPhaseBins'    - (Default:32)
-%   'gammaRange'    - Default:[39.5 50]
-%   'thetaRange'     - Default: [5 8]
+%   'gammaRange'
+%   'thetaRange'
 %   'doGammaThetaMod'
-%   'epochs'            - allows you to only take spikes in (e.g. run)
-%                       epochs
+%   'epochs'
 %
 %   OUTPUTS
 %   phmod           - struct blabla
@@ -41,12 +40,12 @@ function [ph_mod] = getPhaseMap(basepath, varargin)
 %   .ph_bin         - 
 %   .ph_freq_theta  -  
 %   .ph_freq_gamma  -  
-%   .freq           -  frequencies over which phasemap is calculated
-%   .nfreq          -  number of frequency bins
+%   .freq           -  
+%   .nfreq          -  
 %
 %   EXAMPLES
-%   [ph_mod] = getPhaseMap(basepath, 'epochs', run.epochs,'saveMat',true)
-%   
+%
+%
 %   NOTES
 %   % ph_mod.ripmodtime is now ph_mod.ripmod.time
 %   % ph_mod.ripmod is now ph_mod.ripmod.mod

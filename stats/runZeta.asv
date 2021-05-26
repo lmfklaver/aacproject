@@ -5,8 +5,7 @@ function zeta = runZeta(basepath,event, varargin)
 %
 %   %% Dependencies %%%
 %   ZETA Toolbox (in utilities\external)
-%   buzcode
-%   https://github.com/JorritMontijn/ZETA
+%
 %
 %   INPUTS
 %   basepath    - path in which spikes and optostim structs are located
@@ -16,14 +15,13 @@ function zeta = runZeta(basepath,event, varargin)
 %   Name-value pairs:
 %   'basename'      - only specify if other than basename from basepath
 %   'saveMat'       - saving the results to [basename,
-%                   '.pethzeta.stats.mat'] (default: false)
+%                   '.pethzeta.stats.mat']
 %   'saveAs'        - if you want another suffix for your save
 %   'timeBefore'    - this is the time before event onset you want to run
-%                       zeta over (default: 0.1)
+%                       zeta over
 %   'timeAfter'     -  this is the time after event onset you want to run
-%                       zeta over (default: 0.02)
-%   'units' -       - if you only want to do stats over a subset of units
-%                       (default = 'all')
+%                       zeta over
+%   'units' -       - if you only want to do stats
 %
 %   OUTPUTS
 %    zeta
@@ -40,7 +38,7 @@ function zeta = runZeta(basepath,event, varargin)
 %   
 %   HISTORY
 %   2021/02 Lianne updated this
-%   2021/05 LK better comments
+%
 %
 %   TO-DO
 %   - Select over what Units you want do stats 
