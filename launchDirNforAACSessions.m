@@ -23,7 +23,8 @@ dirN  = {...
     
 
 % Sess 6 has pulse artifacts
-% Sess 7 is empty
+% Sess 7 had the wrong datfile copied over initially and looked empty:
+% Still need to check this one!! 
 % Sess 10, 11 and 12 have no good epochs %
 % Sess 13 has 200ms pulses
 % Sess 14 has no AACs
