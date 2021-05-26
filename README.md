@@ -17,7 +17,9 @@ basename.mono_res.cellinfo.mat through CellExplorer\
 basename.cell_metrics.cellinfo.mat through CellExplorer\
 
 ## stats
-basename.pethzeta.stats.mat using FUNCTIONNAME.m and ZETA toolbox \
+basename.pethzeta.stats.mat using runZeta.m and ZETA toolbox \
+<a href="https://www.biorxiv.org/content/10.1101/2020.09.24.311118v1">https://www.biorxiv.org/content/10.1101/2020.09.24.311118v1</a>\
+<a href="https://github.com/JorritMontijn/ZETA">https://github.com/JorritMontijn/ZETA</a>\
 
 
 ## phasemaps and STP
