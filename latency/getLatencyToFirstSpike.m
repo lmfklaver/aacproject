@@ -9,7 +9,8 @@ function LatencyFirstSpike = getLatencyToFirstSpike(spikeTrl_Pulse, pulseEpochs)
 %   
 %
 %   INPUTS
-%   spkTrl_Pulse    - 
+%   spkTrl_Pulse    - spiketimes centered to pulse is 0, struct with
+%                      {iUnit}{iPulse}
 %   pulseEpochs     - Nx2 matrix of start and stop times 
 %
 %
