@@ -9,7 +9,7 @@ dirN  = {...
     'D:/Data/AxoAxo/mouse1/mouse1_180501a';...%4
     'D:/Data/AxoAxo/mouse1/mouse1_180501b';...%5
     'D:/Data/AxoAxo/mouse1/mouse1_180502a';...%6
-    'D:/Data/AxoAxo/mouse1/mouse1_180502b';...%7
+     'D:/Data/AxoAxo/mouse1/mouse1_180502b';...%7
     'D:/Data/AxoAxo/mouse3/mouse3_180627';... %8
     'D:/Data/AxoAxo/mouse3/mouse3_180628';...%9
     'D:/Data/AxoAxo/mouse3/mouse3_180629';...%10

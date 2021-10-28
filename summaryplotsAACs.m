@@ -31,7 +31,7 @@ doSave          = false;
 
 %% Start building the Figure
 
-for iSess = 1%sessions
+for iSess = sessions
     
     cd(dirN{iSess})
     basepath = cd;

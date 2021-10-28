@@ -18,7 +18,7 @@ for iSess= sessions
     
     % [pkValmaxInd, pkIndmaxInd, ripSnip] = findRippleLayerChan(lfp, ripples);
     %%
-    selRipples = [1:200, length(ripples.timestamps)-200:length(ripples.timestamps)];
+    selRipples = 'all';
     [peakRipChan] = findRippleLayerChan(basepath, 'selRipples',selRipples);
 %     [pkValmaxInd, pkIndmaxInd,ripSnip] = findRippleLayerChan(basepath, 'selRipples',selRipples);
     
