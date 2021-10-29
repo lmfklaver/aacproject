@@ -46,12 +46,12 @@ addParameter(p,'epochs',[],@isnumeric);
 
 
 parse(p,varargin{:});
-basename    = p.Results.basename;
-saveMat     = p.Results.saveMat;
-ccgbin      = p.Results.ccgbin;
-ccgtotsamples = p.Results.ccgtotsamples;
-ccgdur      = p.Results.ccgdur;
-gd_eps      = p.Results.epochs;
+basename        = p.Results.basename;
+saveMat         = p.Results.saveMat;
+ccgbin          = p.Results.ccgbin;
+ccgtotsamples   = p.Results.ccgtotsamples;
+ccgdur          = p.Results.ccgdur;
+gd_eps          = p.Results.epochs;
 
 
 
