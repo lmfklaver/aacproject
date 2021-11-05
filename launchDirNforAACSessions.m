@@ -3,23 +3,23 @@
 
 
 dirN  = {...
-    'D:/Data/AxoAxo/mouse1/mouse1_180412_2';... %1
-    'D:/Data/AxoAxo/mouse1/mouse1_180414';... %2
-    'D:/Data/AxoAxo/mouse1/mouse1_180415';... %3
-    'D:/Data/AxoAxo/mouse1/mouse1_180501a';...%4
-    'D:/Data/AxoAxo/mouse1/mouse1_180501b';...%5
-    'D:/Data/AxoAxo/mouse1/mouse1_180502a';...%6
-     'D:/Data/AxoAxo/mouse1/mouse1_180502b';...%7
-    'D:/Data/AxoAxo/mouse3/mouse3_180627';... %8
-    'D:/Data/AxoAxo/mouse3/mouse3_180628';...%9
-    'D:/Data/AxoAxo/mouse3/mouse3_180629';...%10
-    'D:/Data/AxoAxo/mouse4/mouse4_181114b';...%11
-    'D:/Data/AxoAxo/mouse5/mouse5_181112b';...%12
-    'D:/Data/AxoAxo/mouse5/mouse5_181116';...%13
-    'D:/Data/AxoAxo/mouse6/mouse6_190330';...%14
-    'D:/Data/AxoAxo/mouse6/mouse6_190331';...%15
-    'D:\Data\Axoaxo\u19_200310_135409';...%16
-    'D:\Data\Axoaxo\u19_200313_155505'};...%17
+    'D:/Data/mouse1/mouse1_180412_2';... %1 Manual/Visual AACs [3 13]
+    'D:/Data/mouse1/mouse1_180414';... %2 [4]
+    'D:/Data/mouse1/mouse1_180415';... %3 [6 7 16 17 27]
+    'D:/Data/mouse1/mouse1_180501a';...%4 [17* 19]
+    'D:/Data/mouse1/mouse1_180501b';...%5 [26]
+    'D:/Data/mouse1/mouse1_180502a';...%6 [18 20*]
+    'D:/Data/mouse1/mouse1_180502b';...%7
+    'D:/Data/mouse3/mouse3_180627';... %8 [14 23* 25 33]
+    'D:/Data/mouse3/mouse3_180628';...%9 [5 7 20
+    'D:/Data/mouse3/mouse3_180629';...%10
+    'G:/AAC_Data/Headfixed/mouse4/mouse4_181114b';...%11
+    'G:/AAC_Data/Headfixed/mouse5/mouse5_181112b';...%12
+    'G:/AAC_Data/Headfixed/mouse5/mouse5_181116';...%13
+    'G:/AAC_Data/Headfixed/mouse6/mouse6_190330';...%14
+    'G:/AAC_Data/Headfixed/mouse6/mouse6_190331';...%15
+    'G:/AAC_Data/Headfixed/u19/u19_200310_135409';...%16
+    'G:/AAC_Data/Headfixed/u19/u19_200313_155505'};...%17
     
 
 % Sess 6 has pulse artifacts
