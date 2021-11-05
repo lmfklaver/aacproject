@@ -62,7 +62,7 @@ addParameter(p,'saveMat',false,@islogical);
 addParameter(p,'saveAs','.pethzeta.stats.mat',@isstring);
 addParameter(p,'timeBefore',0.1,@isnumeric);
 addParameter(p,'timeAfter',0.02,@isnumeric); % 
-addParameter(p,'units','all',@unitsValidation); % 
+addParameter(p,'units','all',unitsValidation); % 
 
 
 parse(p,varargin{:});
