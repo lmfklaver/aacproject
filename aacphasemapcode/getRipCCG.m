@@ -19,7 +19,6 @@ function [ripple_ccg] = getRipCCG(basepath,spikes,varargin)
 %   OUTPUTS
 %
 %   EXAMPLES
-%      [ripple_ccg] = getRipCCG(basepath,spikes,'epochs',gd_eps,'ccgbin', 0.001,'saveMat',true);
 %
 %   NOTES
 %
@@ -39,19 +38,20 @@ basename = bz_BasenameFromBasepath(basepath);
 p = inputParser;
 addParameter(p,'basename',basename,@isstr);
 addParameter(p,'saveMat',true,@islogical);
-addParameter(p,'ccgbin', 0.001,@isnumeric);
-addParameter(p,'ccgdur',1,@isnumeric);
+addParameter(p,'ccgbin', 0.005,@isnumeric);
+addParameter(p,'ccgtotsamples',10001,@isnumeric);
+addParameter(p,'ccgdur',0.2,@isnumeric);
 addParameter(p,'epochs',[],@isnumeric);
 
 
 
 parse(p,varargin{:});
-basename    = p.Results.basename;
-saveMat     = p.Results.saveMat;
-ccgbin      = p.Results.ccgbin;
-ccgtotsamples = p.Results.ccgtotsamples;
-ccgdur      = p.Results.ccgdur;
-gd_eps      = p.Results.epochs;
+basename        = p.Results.basename;
+saveMat         = p.Results.saveMat;
+ccgbin          = p.Results.ccgbin;
+ccgtotsamples   = p.Results.ccgtotsamples;
+ccgdur          = p.Results.ccgdur;
+gd_eps          = p.Results.epochs;
 
 
 
@@ -61,6 +61,7 @@ if isempty(gd_eps)
     % OR: gd_eps is entire session
 end
 
+
 % Get ripple CCGs
 cid = [];
 rip_ccg = [];
@@ -68,9 +69,9 @@ NN = [];
 ix = 1;
 
 load([basename '.ripples.events.mat'])
-load([basename '.spikes.cellinfo.mat'])
-
-t = ripples.peaks; %11/5/2021 changed ripple onset to ripple peaks
+% rip = LoadEvents([basepath '/' basename '.evt.rip']);
+% t   = rip.time(cellfun(@any,regexp(rip.description,'start')));
+t = ripples.timestamps(:,1);
 
 for j = 1:length(spikes.times)
     [status] = InIntervals(spikes.times{j},gd_eps);
@@ -81,21 +82,19 @@ for j = 1:length(spikes.times)
         cid = [cid;spikes.shankID(j) spikes.UID(j)];
     end
     
-    spikesGd{j} = (spikes.times{j}(status));
-end
-spikesandrip = [spikesGd,{t}];
-    %CCG takes cell arrays of Nx1
-    [rip_ccg,ccgtime] = CCG(spikesandrip,[],'Fs',30000,'binSize',ccgbin,...
-        'duration',ccgdur,'norm','rate');
+    rip_ccg(ix,:) = CrossCorr(t,spikes.times{j}(status),ccgbin,ccgtotsamples)/length(t);
+%     rip_ccg(ix,:) = CCG(t,spikes.times{j}(status),'binSize',ccgbin,'duration',ccgdur,'norm','rate');
+    NN(ix) = sum(status);
+    ix = ix+1;
     
-   
+    
+end
 
 ripple_ccg.ccg          = rip_ccg;
-ripple_ccg.t             =ccgtime;
 ripple_ccg.binsize      = ccgbin;
 ripple_ccg.binlength    = ccgtotsamples;
-ripple_ccg.ccgdur       = ccgdur;
-ripple_ccg.ccglength     = ccgbin*(ccgdur); % for plotting
+% ripple_ccg.ccgdur       = ccgdur;
+ripple_ccg.ccglength     = ccgbin*(ccgtotsamples-1); % for plotting
 
 %%
 if saveMat

@@ -33,7 +33,7 @@ function ripmod = getRipMod(basepath, varargin)
 %
 %   HISTORY
 %   2020/12/05  Lianne pulled this out of the getPhaseMap
-%   2020/12/08  Lianne documented this poorly
+%   2020/12/08  Lianne documented this
 %
 %
 %   TO-DO
@@ -52,7 +52,7 @@ p = inputParser;
 addParameter(p,'basename',basename,@isstr);
 addParameter(p,'saveMat',true,@islogical);
 addParameter(p,'ccg',[],@isstruct);
-addParameter(p,'ccgBaseBins', 1:100,@isnumeric);
+addParameter(p,'ccgBaseBins', 1:4000,@isnumeric);
 addParameter(p,'binsAroundPeak',50,@isnumeric);
 addParameter(p,'epochs',[],@isnumeric);
 
@@ -68,7 +68,7 @@ gd_eps          = p.Results.epochs;
 cd(basepath)
 %%
 if isempty(ripple_ccg)
-    [ripple_ccg] = getRipCCG(basepath,spikes,'epochs',gd_eps,'ccgbin', 0.0001,'ccgtotsamples',10001,'saveMat',true);
+    [ripple_ccg] = getRipCCG(basepath,spikes,'epochs',gd_eps,'ccgbin', 0.005,'ccgtotsamples',10001,'saveMat',false);
 end
 
 ripmod = [];
@@ -78,6 +78,6 @@ ripmod.mod = nanmean(ripple_ccg.ccg(:,ccgPeakBin - binsAroundPeak:ccgPeakBin+bin
     ./nanmean(ripple_ccg.ccg(:,ccgBaseBins),2);
 ripmod.time       = binsAroundPeak*ripple_ccg.binsize;
 
-%%save basename.ripmod.mat
+
 end
 
