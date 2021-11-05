@@ -31,14 +31,11 @@ function [ccginout] = getCCGinout(basepath, epochs, varargin)
 %
 %       EXAMPLES
 %       [ccginout] = getCCGinout(basepath, spikes, pulseEpochs)
-%       [ccginout] = getCCGinout(basepath,[],'epochname','noEpochs','saveAs','.ccgall.analysis.mat')
-%       [ccginout] = getCCGinout(basepath,optoStim.timestamps,'epochname','optoStim.timestamps')
-%       
+%
+%
 %       HISTORY
-%       2021-01     Lianne documented this code
-%       2021-10     Lianne and earl added features to saveAs and epochname,
-%                   overwrite name
-%       
+%       2021-01   Lianne documented this code
+%
 %       TO-DO
 %       - Option to run it over a subset of clusters?
 %       - Move all parameters to .ccgparams.[var] ?
@@ -59,8 +56,6 @@ addParameter(p,'saveMat',true,@islogical);
 addParameter(p,'binSize',0.001,@isnumeric);
 addParameter(p,'duration',0.2,@isnumeric);
 addParameter(p,'normalization','rate',@isstr);
-addParameter(p,'epochname',[],@isstr);
-addParameter(p,'saveAs','.ccginout.analysis.mat', @isstr);
 
 
 parse(p,varargin{:});
@@ -68,8 +63,7 @@ saveMat         = p.Results.saveMat;
 normalization   = p.Results.normalization;
 duration        = p.Results.duration;
 binSize         = p.Results.binSize;
-epochname       = p.Results.epochname;
-saveAs          = p.Results.saveAs;
+
 cd(basepath)
 
 %%
@@ -110,27 +104,8 @@ ccginout.binSize    = binSize;
 ccginout.duration   = duration;
 ccginout.normalization = normalization;
 
-if ~isempty(epochname)
-ccginout.epochname = epochname;
-end
-
-
 if saveMat
-    fName = [basename saveAs];
-      if exist(fName,'file')
-        overwrite = input([fName ' already exists. Overwrite? [Y/N] '],'s');
-        switch overwrite
-            case {'y','Y'}
-                delete(fName)
-            case {'n','N'}
-                return
-            otherwise
-                error('Y or N please...')
-        end
-    end
-        save(fName,'ccginout')
-        
-        
+    save([basename '.ccginout.mat'],'ccginout')
 end
 
 
