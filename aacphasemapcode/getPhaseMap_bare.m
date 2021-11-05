@@ -219,59 +219,60 @@ for i = 1:nfreq-1
             [spk_ph_cnt,spk_ph_bin] = histc(spk_ph,ph_bin);
             ph_rate(i,:,j) = spk_ph_cnt./occ_bin;
             
-            % get spike trans (must have loaded shorttermplasticity) should
-            % this be in phasemap code ?? LK
-            
-            %check if cell is presynaptic
-            if ismember(j,pre_idx(:,3),'rows')
-                
-                %get all post syn
-                
-                kp_post = post_idx(ismember(pre_idx(:, 3), j, 'rows'), 3);
-                
-                %get post synaptic cells
-                for iUnit = 1:length(spikes.times)
-%                     for k = 1:length(kp_post)
-                    %include all aacs instead of only those with
-                    %monosynaptic connections 
-%                     ix = find(ismember(mono_con_axax, [j kp_post(k)], 'rows'));
-%                     target = spikes.times{kp_post(k)};
-                        target = spikes.times{iUnit};
-                    %restrict to good epochs
-                    [status] = InIntervals(target,gd_eps);
-                    target = target(status);
-                    
-                    ref = ref(spk_ph_bin>0);
-                    spk_ph_bin = spk_ph_bin(spk_ph_bin>0);
-                    
-                    times = [ref;target];
-                    groups = [ones(length(ref),1); 2*ones(length(target),1)];
-                    
-                    %condition over phase bin
-                    conditions = [spk_ph_bin;ones(length(target),1)]; % why so many ones
-                    
-                    %run conditional CCG
-                    [times,b] = sort(times);
-                    groups = groups(b);
-                    conditions = conditions(b);
-                    duration = .2;  %hardcoded
-                    binsize = .0008; %hardcoded
-                    conv_wind = .015; %hardcoded
-                    [ccg,n,t] = CCGCond(times,groups,conditions,'binsize',binsize,'duration',duration,'across_groups',false);
-                    ccg = double(squeeze(ccg(:,1,2,:))');
-                    
-                    %get trans prob at every ISI
-                    for ii = 1:size(ccg,1)
-                        [ph_map(ix).trans_phase(i,ii),prob,~] = GetTransProb(ccg(ii,:)',n(1,1,2,ii),binsize,conv_wind);
-                        
-                    end
-                    
-                    %save
-                    ph_map(ix).time.n(i,:) = squeeze(n(:,1,2,1));
-                    ph_map(ix).time.t_lag = t;
-                    ph_map(ix).time.bins = ph_bin;
-                    
-                end
+            %% THIS SHOULD MOVE OUTSIDE TOO 
+%             % get spike trans (must have loaded shorttermplasticity) should
+%             % this be in phasemap code ?? LK
+%             
+%             %check if cell is presynaptic
+%             if ismember(j,pre_idx(:,3),'rows')
+%                 
+%                 %get all post syn
+%                 
+%                 kp_post = post_idx(ismember(pre_idx(:, 3), j, 'rows'), 3);
+%                 
+%                 %get post synaptic cells
+%                 for iUnit = 1:length(spikes.times)
+% %                     for k = 1:length(kp_post)
+%                     %include all aacs instead of only those with
+%                     %monosynaptic connections 
+% %                     ix = find(ismember(mono_con_axax, [j kp_post(k)], 'rows'));
+% %                     target = spikes.times{kp_post(k)};
+%                         target = spikes.times{iUnit};
+%                     %restrict to good epochs
+%                     [status] = InIntervals(target,gd_eps);
+%                     target = target(status);
+%                     
+%                     ref = ref(spk_ph_bin>0);
+%                     spk_ph_bin = spk_ph_bin(spk_ph_bin>0);
+%                     
+%                     times = [ref;target];
+%                     groups = [ones(length(ref),1); 2*ones(length(target),1)];
+%                     
+%                     %condition over phase bin
+%                     conditions = [spk_ph_bin;ones(length(target),1)]; % why so many ones
+%                     
+%                     %run conditional CCG
+%                     [times,b] = sort(times);
+%                     groups = groups(b);
+%                     conditions = conditions(b);
+%                     duration = .2;  %hardcoded
+%                     binsize = .0008; %hardcoded
+%                     conv_wind = .015; %hardcoded
+%                     [ccg,n,t] = CCGCond(times,groups,conditions,'binsize',binsize,'duration',duration,'across_groups',false);
+%                     ccg = double(squeeze(ccg(:,1,2,:))');
+%                     
+%                     %get trans prob at every ISI
+%                     for ii = 1:size(ccg,1)
+%                         [ph_map(ix).trans_phase(i,ii),prob,~] = GetTransProb(ccg(ii,:)',n(1,1,2,ii),binsize,conv_wind);
+%                         
+%                     end
+%                     
+%                     %save
+%                     ph_map(ix).time.n(i,:) = squeeze(n(:,1,2,1));
+%                     ph_map(ix).time.t_lag = t;
+%                     ph_map(ix).time.bins = ph_bin;
+%                     
+%                 end
             end
             
         end
@@ -289,95 +290,3 @@ ph_mod.freq             = freq;
 ph_mod.nfreq            = nfreq;
 %%
 
-if doGammaThetaMod
-    %% get preferred phases for ripples and gamma
-    ph_pref_gam =[];ph_pref_theta=[];
-    
-    
-    % Make this to select a bin from 'gammaRange' and 'thetaRange'
-    %This depends highly on how many bins!
-    %     gammafreqbin = 18;% 39.7 - 49.95
-    %     thetafreqbin = 9; %6.3 - 7.9 Hz
-    %
-    thetaBins = find(freq>thetaRange(1) & freq<thetaRange(2));
-    
-    if length(thetaBins) == 1
-        thetafreqbin = thetaBins;
-    else
-        thetaBins(end) = [];
-        
-        for iThetaBin = 1:length(thetaBins)
-            thetafreqbin = thetaBins(iThetaBin);
-            
-            ph_rate1 = ph_rate;
-            
-            
-            
-            for i = 1:size(ph_rate1,3)
-                y = ph_rate1(:,:,i);
-                rvect = nanmean(y(thetafreqbin,:).*exp(1i .* ph_bin)); %
-                ph_pref_theta_temp(:,i,iThetaBin) = atan2(imag(rvect),real(rvect));
-            end
-            
-            ph_pref_theta = mean(ph_pref_theta_temp,3);
-        end
-    end
-    
-    gammaBins = find(freq>gammaRange(1) & freq<gammaRange(2));
-    
-    if length(gammaBins) == 1
-        gammafreqbin = gammaBins;
-    else
-        
-        
-        for iGammaBin = 1:length(gammaBins)
-            gammafreqbin = gammaBins(iGammaBin);
-            
-            for i = 1:size(ph_rate1,3)
-                y = ph_rate1(:,:,i);
-                rvect = nanmean(y(gammafreqbin,:).*exp(1i .* ph_bin)); %
-                ph_pref_gam_temp(:,i,iGammaBin) = atan2(imag(rvect),real(rvect));
-                
-            end
-            ph_pref_gam = mean(ph_pref_gam_temp,3);
-        end
-        
-        
-        ph_mod.ph_pref_gam      = ph_pref_gam;
-        ph_mod.ph_pref_theta    = ph_pref_theta;
-        ph_mod.ph_freq_theta    = freq(thetaBins);
-        ph_mod.ph_freq_gamma    = freq(gammaBins);
-        
-    end
-    %% Calculate the ripple CCG and get the ripple modulation:
-    
-    if doRippleCCG
-        ripple_ccg  = getRipCCG(basepath,spikes,'epochs',gd_eps,'ccgbin', 0.005,'ccgtotsamples',10001,'saveMat',false);
-        ripmod      = getRipMod(basepath,'ccg',ripple_ccg,'saveMat',false);
-        
-        ph_mod.ripmod           = ripmod; % with ripmod.mod and ripmod.time
-        ph_mod.ripple_ccg       = ripple_ccg; % with .ccg, .ccglength and .binlength and .binSize
-    end
-    
-    
-    %% And save
-    
-    if saveMat
-        fphm = fullfile(basepath,[basename,'.ph_mod.mat']);
-        
-        if exist(fphm,'file')
-            overwrite = input([basename,'.ph_mod.mat already exists. Overwrite? [Y/N] '],'s');
-            switch overwrite
-                case {'y','Y'}
-                    delete(fphm)
-                case {'n','N'}
-                    return %% LK: Unsure if a return is appropriate or if this should be a break
-                otherwise
-                    error('Y or N please...')
-            end
-        end
-        
-        save([basename '.ph_mod.mat'], 'ph_mod')
-        
-    end
-end

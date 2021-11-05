@@ -1,4 +1,4 @@
-function [ripple_ccg] = getRipCCG(basepath,spikes,varargin)
+function [ripple_ccg] = getRipCCG_CCG(basepath,spikes,varargin)
 
 %   USAGE
 %
@@ -40,7 +40,7 @@ addParameter(p,'basename',basename,@isstr);
 addParameter(p,'saveMat',true,@islogical);
 addParameter(p,'ccgbin', 0.005,@isnumeric);
 addParameter(p,'ccgtotsamples',10001,@isnumeric);
-addParameter(p,'ccgdur',0.2,@isnumeric);
+addParameter(p,'ccgdur',2,@isnumeric);
 addParameter(p,'epochs',[],@isnumeric);
 
 
@@ -57,10 +57,9 @@ gd_eps          = p.Results.epochs;
 
 %%
 if isempty(gd_eps)
-    disp('No gd_eps')
+    disp('No gd_eps, skipping session')
     % OR: gd_eps is entire session
-end
-
+else
 
 % Get ripple CCGs
 cid = [];
@@ -82,13 +81,16 @@ for j = 1:length(spikes.times)
         cid = [cid;spikes.shankID(j) spikes.UID(j)];
     end
     
-    rip_ccg(ix,:) = CrossCorr(t,spikes.times{j}(status),ccgbin,ccgtotsamples)/length(t);
-%     rip_ccg(ix,:) = CCG(t,spikes.times{j}(status),'binSize',ccgbin,'duration',ccgdur,'norm','rate');
-    NN(ix) = sum(status);
-    ix = ix+1;
+    spikesGd_eps{j} = spikes.times{j}(status);
 end
+    ripandspike = [spikesGd_eps,{t}]
+   [rip_ccg,ccgtime] = CCG(ripandspike,[],'Fs',30000,'binSize',ccgbin,'duration',ccgdur,'norm','rate');
+    
+    
+
 
 ripple_ccg.ccg          = rip_ccg;
+ripple_ccg.t            = ccgtime;
 ripple_ccg.binsize      = ccgbin;
 ripple_ccg.binlength    = ccgtotsamples;
 % ripple_ccg.ccgdur       = ccgdur;
@@ -113,5 +115,5 @@ if saveMat
     
     save([basename '.ripple_ccg.mat'],'ripple_ccg')
 end
-
+end
 end
