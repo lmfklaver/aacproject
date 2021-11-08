@@ -1,9 +1,10 @@
 function [pyrs, ints, aacs] = splitCellTypes(basepath)
-% This function splits PYRs, INTs and AACs using cellexplorer and
-% optotagging as classifiers
+% This function splits PYRs, INTs and AACs using cellexplorer for putative cellType,
+% and significant optomodulation in a certain direction for optomod units
 %
 %   USAGE
-%
+%   [pyrs, ints, aacs] = splitCellTypes(basepath)
+% 
 %   Dependencies:
 %   Buzcode, spikes.cellinfo.mat, optoStim.manipulation.mat, cell_metrics.cellinfo.mat,
 %   zeta mat stats file.
@@ -15,7 +16,7 @@ function [pyrs, ints, aacs] = splitCellTypes(basepath)
 %   OUTPUTS
 %   pyrs    - indices for Pyramidal Cells
 %   ints    - indices for Interneurons without AACs
-%   aacs    - indices for AACs
+%   aacs    - indices for AACs that are optomodulated 
 %
 %   EXAMPLES
 %   [pyrs, ints, aacs] = splitCellTypes(basepath);
@@ -36,9 +37,9 @@ function [pyrs, ints, aacs] = splitCellTypes(basepath)
 cd(basepath)
 basename = bz_BasenameFromBasepath(cd);
 
-load([basename '.spikes.cellinfo.mat'])
-load([basename '.optoStim.manipulation.mat'])
-load([basename '.cell_metrics.cellinfo.mat'])
+load([basename '.spikes.cellinfo.mat'],'spikes')
+load([basename '.optoStim.manipulation.mat'],'optoStim')
+load([basename '.cell_metrics.cellinfo.mat'],'cell_metrics')
 
 % if no ZETA, calculate ZETA? TO DO? Load other stats?"
 load([basename '.pethzeta.stats.mat'])

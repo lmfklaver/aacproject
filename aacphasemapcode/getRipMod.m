@@ -34,9 +34,13 @@ function ripmod = getRipMod(basepath,spikes, varargin)
 %
 %   HISTORY
 %   2020/12/05  Lianne pulled this out of the getPhaseMap
+
 %   2020/12/08  Lianne documented this poorly
 %   2021/11/08  Earl softcoded ripmod, and ripmod is based off of CCG
 %   instead of CrossCor
+
+%   2020/12/08  Lianne documented this
+
 %
 %   TO-DO
 %
@@ -54,7 +58,9 @@ p = inputParser;
 addParameter(p,'basename',basename,@isstr);
 addParameter(p,'saveMat',true,@islogical);
 addParameter(p,'ccg',[],@isstruct);
+
 addParameter(p,'baselineAroundPeak',[-.05 .05],@isnumeric);
+
 addParameter(p,'epochs',[],@isnumeric);
 addParameter(p, 'baseTime', [-0.4 -0.3], @isnumeric); % [start stop]
 
@@ -69,7 +75,9 @@ baseTime        = p.Results.baseTime;
 cd(basepath)
 %%
 if isempty(ripple_ccg)
+
     [ripple_ccg] = getRipCCG(basepath,spikes,'epochs',gd_eps,'ccgbin', 0.001,'saveMat',true);
+
 end
 
 ripmod = [];
@@ -84,6 +92,6 @@ ripmod.mod = nanmean(ripple_ccg.ccg(binsAroundPeak,cellsInCCG,rippleInCCG),1)...
     ./nanmean(ripple_ccg.ccg(ccgBaseBins,cellsInCCG,rippleInCCG),1);
 ripmod.time       = binsAroundPeak*ripple_ccg.binsize;
 
-%%save basename.ripmod.mat
+
 end
 

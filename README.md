@@ -11,7 +11,8 @@ Run onset is defined as >2 cm/s
 Buzcode: <a href="https://github.com/buzsakilab/buzcode">https://github.com/buzsakilab/buzcode</a>\
 CellExplorer:<a href="https://github.com/petersenpeter/CellExplorer">https://github.com/petersenpeter/CellExplorer</a>\
 ZETA: <a href="https://www.biorxiv.org/content/10.1101/2020.09.24.311118v1">https://www.biorxiv.org/content/10.1101/2020.09.24.311118v1</a>\
-<a href="https://github.com/JorritMontijn/ZETA">https://github.com/JorritMontijn/ZETA</a>
+<a href="https://github.com/JorritMontijn/ZETA">https://github.com/JorritMontijn/ZETA</a>\
+Cite as: eLife 2021;10:e71969 DOI: 10.7554/eLife.71969
 
 # .Mat files that are being loaded in
 

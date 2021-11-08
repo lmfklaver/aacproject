@@ -1,9 +1,9 @@
 %% This script makes the summary plots for each AAC
 
 % Create a variable called dirN to loop over to make summary plots:
-launchDirNforAACSessions %%Works, Edit sessions in this file - EG
+launchDirNforAACSessions
 
-sessions = [1,2,3,4,5,8,9];%16,17 until harddrive 17;%[8,9,16,17]; %1,2,3,4,5,
+sessions = [1,2,3,4,5,8,9,16,17];% 17;%[8,9,16,17]; %1,2,3,4,5,
 
 % Sess 6 has pulse artifacts
 % Sess 7 needs to be checked, was copied over with an empty .dat initially
@@ -12,35 +12,38 @@ sessions = [1,2,3,4,5,8,9];%16,17 until harddrive 17;%[8,9,16,17]; %1,2,3,4,5,
 % Sess 14 has no AACs
 
 %% Get all the gray dots for the theta phase x ripple mod plot via:
-getCumulRipModThetaPhase % requires a variable session to work %%Works, no hardcoding - EG
+getCumulRipModThetaPhase % requires a variable session to work
 
 
 %% Select which Subplots you want to plot in the Summary
-doWaveform      = false;
-doACG           = false;
+doWaveform      = true;
+doACG           = true;
 doPETHPulse     = true;
 doPETHRip       = true;
+
 doPhaseMap      = false;
+
 doZETA          = false;
-doPETHRun       = false;
+doPETHRun       = true;
 doFRRun         = false;
 doRipTheta      = false;
-doLatency       = false;
+doLatency       = true;
 doRippleLong    = false;
 doSave          = false;
 
 %% Start building the Figure
 
-for iSess = 9%sessions  %%Earl makes edits here to be able to loop through sessions  - EG
+for iSess = sessions
     
     cd(dirN{iSess})
     basepath = cd;
     basename = bz_BasenameFromBasepath(cd);
     
-% [zeta] = runZeta('G:/AAC_Data/Headfixed/mouse6/mouse6_190331',optoStim.timestamps(:,1),'saveMat',true)    
+    
     % % % % % % % % % % % % %
     % % Get AACs
     % % % % % % % % % % % % %
+    
     [~, ~, aacs] = splitCellTypes(basepath);
 
     load([basename '.spikes.cellinfo.mat']) % from buzcode
@@ -48,7 +51,8 @@ for iSess = 9%sessions  %%Earl makes edits here to be able to loop through sessi
     
     load([basename '.cell_metrics.cellinfo.mat']) % from cell explorer
     %     load([basename '.ccginout.mat'])
-%    load([basename '.ccginout.analysis.mat']) % through getCCGinout.m %%Just fix preprocessing
+    load([basename '.ccginout.analysis.mat']) % through getCCGinout.m
+    
     load([basename '.optoStim.manipulation.mat']) % from getPulseEpochs, through a wrapper
     %     load([basename '.dblZeta20_100_100.mat'])
     load([basename '.pethzeta.stats.mat']) %through getZeta.m using ZETA toolbox
@@ -75,16 +79,37 @@ for iSess = 9%sessions  %%Earl makes edits here to be able to loop through sessi
     %             selRunEpochs = run.epochs(run.epochs(:,2)-run.epochs(:,1)>=minRunLength,:);
     %
     %         else
+    load([basename '_analogin.mat'])
+    selRunEpochs = [];
     
-% % % %     if isfield(analogin,'pos')
-% % % %         if doPETHRun
-% % % %     [selRunEpochs,vel,run]=PETHRun(analogin,basepath,minRunLength,minRunSpeed)
-% % % %         end
-% % % %     end
+    if isfield(analogin,'pos')
+        if doPETHRun
+            %             if exist([basename '.run2cm.states.mat'], 'file')
+            %                 load ([basename '.run2cm.states.mat'])
+            %             else
+            
+            [vel] = getVelocity(analogin,'doFigure',false,'downsampleFactor',3000);
+            [run] = getRunEpochs(basepath,vel,'minRunSpeed',minRunSpeed,'saveMat',true,'saveAs','.run2cm.states.mat');
+            %             end
+            
+            selRunEpochs = run.epochs(run.epochs(:,2)-run.epochs(:,1)>=minRunLength,:);
+        end
+    end
     %     end
     
+    % % % % % % % % % % % % %
+    % % Ripple LFP Epochs
+    fils  = getAllExtFiles(basepath,'rip',1);
+    rip = LoadEvents(fils{1});
+    
+    % pulls the channel from the ripples and loads the xml file
+    rippleChan = str2double(rip.description{1}(regexp(rip.description{1},'[0-9]')));
+    lfp = bz_GetLFP(rippleChan);
+    
+    
+    
     %%
-    for iAAC =1:length(aacs)%1:length(spikes.times)
+    for iAAC =aacs%1:length(spikes.times)
         
         Fh = figure;
         set(gcf, 'Position', get(0, 'Screensize'));
@@ -153,7 +178,6 @@ for iSess = 9%sessions  %%Earl makes edits here to be able to loop through sessi
             
             % Plot
             h1 = histogram('BinEdges',timeEdges, 'BinCounts',ratePulse(iAAC,:));
-
             hold on
             box off
             set(gca,'TickDir','out')
@@ -348,8 +372,6 @@ for iSess = 9%sessions  %%Earl makes edits here to be able to loop through sessi
         % % % % % % % % % % % % %
         subplot(6,4,17)
         %         load([basename '.ccg.mat'])
-        ccg = ccginout.ccgOUT;
-        t = ccginout.t;
         monoIdx = find(STP.post_idx(:,3)==iAAC);
         selCCGin = STP.pre_idx(monoIdx,3);
         selCCGout = iAAC;
@@ -440,7 +462,6 @@ for iSess = 9%sessions  %%Earl makes edits here to be able to loop through sessi
         % % % % % % % % % % % % %
         % % Ripple Mod x Theta Phase
         % % % % % % % % % % % % %
-         dotSize = 50;
         if doRipTheta
             subplot(6,4,19)
             hold off
@@ -455,7 +476,8 @@ for iSess = 9%sessions  %%Earl makes edits here to be able to loop through sessi
             xlabel('theta phase')
             xlim([-pi pi])
             ylabel('ripple mod')
-            %yline(1,':')
+            yline(1,':')
+            
             lgd = legend({'all AACs','selected AAC'},'Location','northoutside','NumColumns',2);
             legend('boxoff')
         end
@@ -566,7 +588,7 @@ for iSess = 9%sessions  %%Earl makes edits here to be able to loop through sessi
         
         load('chanMap.mat')
         aacChanMap = chanMap == spikes.maxWaveformCh(iAAC)+1;
-        ripChanMap = chanMap == ripples.detectorinfo.detectionchannel+1;
+        ripChanMap = chanMap == rippleChan+1;
         
         plot(xcoords(ripChanMap)-1,ycoords(ripChanMap),'ko','MarkerFaceColor','k')
         hold on
