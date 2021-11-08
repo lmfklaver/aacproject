@@ -19,7 +19,7 @@ getCumulRipModThetaPhase % requires a variable session to work %%Works, no hardc
 doWaveform      = false;
 doACG           = false;
 doPETHPulse     = true;
-doPETHRip       = false;
+doPETHRip       = true;
 doPhaseMap      = false;
 doZETA          = false;
 doPETHRun       = false;
@@ -42,7 +42,7 @@ for iSess = 9%sessions  %%Earl makes edits here to be able to loop through sessi
     % % Get AACs
     % % % % % % % % % % % % %
     [~, ~, aacs] = splitCellTypes(basepath);
-    
+
     load([basename '.spikes.cellinfo.mat']) % from buzcode
     load([basename '.mono_res.cellinfo.mat']) % through cellexplorer - unsure if used in current iteration
     
@@ -62,7 +62,7 @@ for iSess = 9%sessions  %%Earl makes edits here to be able to loop through sessi
     % % % % % % % % % % % % %
     % % PulseEpochs
     pulseEpochs = optoStim.timestamps;
-    
+    gd_eps=get_gd_eps(basepath);
     % % % % % % % % % % % % %
     % % runEpochs
     
@@ -142,6 +142,7 @@ for iSess = 9%sessions  %%Earl makes edits here to be able to loop through sessi
             if exist([basename '.pulsepeth.analysis.mat'],'file')
                 load([basename '.pulsepeth.analysis.mat'])
             else
+                
                 [peth] = getPETH_epochs(basepath,'epochs',pulseEpochs,...
                     'saveAs', '.pulsepeth.analysis.mat');
             end
@@ -202,8 +203,12 @@ for iSess = 9%sessions  %%Earl makes edits here to be able to loop through sessi
             if exist([basename '.ripplepeth.analysis.mat'],'file')
                 load([basename '.ripplepeth.analysis.mat'])
             else
-                [peth] = getPETH_epochs(basepath,'epochs',ripples.peaks,'timwin',[-0.4 0.4], ...
-                    'binSize', 0.01, 'saveAs', '.ripplepeth.analysis.mat');
+            [status]=InIntervals(ripples.peaks,gd_eps);
+            gd_ripplepeaks=ripples.peaks(status);
+%                 [peth] = getPETH_epochs(basepath,'epochs',gd_ripplepeaks,'timwin',[-0.4 0.4], ...
+%                     'binSize', 0.01, 'saveAs', '.ripplepeth.analysis.mat');
+                   [peth] = getPETH_epochs(basepath,'epochs',gd_ripplepeaks,'timwin',[-1 1], ...
+                    'binSize', 0.01, 'saveAs', '.ripplepeth10long.analysis.mat');
             end
             
             rateHistoRip    = peth.rate;
@@ -212,6 +217,7 @@ for iSess = 9%sessions  %%Earl makes edits here to be able to loop through sessi
             
             %
             % Plot
+            figure,
             h1 = histogram('BinEdges',timeEdges, ...
                 'BinCounts',rateHistoRip(iAAC,:));
             hold on
@@ -335,8 +341,7 @@ for iSess = 9%sessions  %%Earl makes edits here to be able to loop through sessi
         xlabel('time (s)')
         ylabel('rate')
         title('Presynaptic Partners')
-        
-        
+
         %%
         % % % % % % % % % % % % %
         % % CCG Heatmap

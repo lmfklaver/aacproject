@@ -11,7 +11,7 @@ dirN  = {...
     'D:/Data/mouse1/mouse1_180502a';...%6 [18 20*]
     'D:/Data/mouse1/mouse1_180502b';...%7
     'D:/Data/mouse3/mouse3_180627';... %8 [14 23* 25 33]
-    'D:/Data/mouse3/mouse3_180628';...%9 [5 7 20
+    'D:/Data/mouse3/mouse3_180628';...%9 [5 7 20]
     'D:/Data/mouse3/mouse3_180629';...%10
     'G:/AAC_Data/Headfixed/mouse4/mouse4_181114b';...%11
     'G:/AAC_Data/Headfixed/mouse5/mouse5_181112b';...%12
