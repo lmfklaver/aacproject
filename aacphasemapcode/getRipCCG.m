@@ -46,12 +46,13 @@ addParameter(p,'epochs',[],@isnumeric);
 
 
 parse(p,varargin{:});
-basename        = p.Results.basename;
-saveMat         = p.Results.saveMat;
-ccgbin          = p.Results.ccgbin;
-ccgtotsamples   = p.Results.ccgtotsamples;
-ccgdur          = p.Results.ccgdur;
-gd_eps          = p.Results.epochs;
+
+basename    = p.Results.basename;
+saveMat     = p.Results.saveMat;
+ccgbin      = p.Results.ccgbin;
+ccgdur      = p.Results.ccgdur;
+gd_eps      = p.Results.epochs;
+
 
 
 
@@ -90,9 +91,10 @@ end
 
 ripple_ccg.ccg          = rip_ccg;
 ripple_ccg.binsize      = ccgbin;
-ripple_ccg.binlength    = ccgtotsamples;
-% ripple_ccg.ccgdur       = ccgdur;
-ripple_ccg.ccglength     = ccgbin*(ccgtotsamples-1); % for plotting
+
+ripple_ccg.ccgdur       = ccgdur;
+ripple_ccg.ccglength     = ccgbin*(ccgdur); % for plotting
+
 
 %%
 if saveMat

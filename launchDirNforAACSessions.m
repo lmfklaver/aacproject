@@ -3,6 +3,7 @@
 
 
 dirN  = {...
+
     'D:/Data/AxoAxo/mouse1/mouse1_180412_2';... %1
     'D:/Data/AxoAxo/mouse1/mouse1_180414';... %2
     'D:/Data/AxoAxo/mouse1/mouse1_180415';... %3
@@ -20,6 +21,7 @@ dirN  = {...
     'D:/Data/AxoAxo/mouse6/mouse6_190331';...%15
     'D:\Data\Axoaxo\u19_200310_135409';...%16
     'D:\Data\Axoaxo\u19_200313_155505'};...%17
+
     
 
 % Sess 6 has pulse artifacts
