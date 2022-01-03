@@ -5,10 +5,10 @@
 %
 %
 %
-% determine frequency theta ([4 10])
+% determine frequency theta ([5 10])
 % get phases of all spikes to each of those frequencies
 
-freq = [4:1:10];
+freq = [5:1:10];
 
 % for i = 1%:nFreq-1
 

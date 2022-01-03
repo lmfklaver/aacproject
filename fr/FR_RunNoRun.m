@@ -1,5 +1,5 @@
 %%Find spikes in intervals
-
+%% goodeps/not good eps - softcode pulsetime-loop through sessions
 
 noRunEpochs = noRunTimes;
 noPulseEpochs = noPulseTimes;
@@ -51,9 +51,9 @@ end
 [pyrs, ints, aacs] = splitCellTypes(basepath)
 
 %runFR pulse
-totalPulseTimeRec = length(pulseEpochs)*0.3;
+totalPulseTimeRec = length(pulseEpochs)*0.3;%300ms time here
 for iUnit = 1:length(spikes.times)
-fr_allrunpulse(iUnit) = length(runSpikesPulse{iUnit})/totalPulseTimeRec;
+fr_allrunpulse(iUnit) = length(runSpikesPulse{iUnit})/totalPulseTimeRec; %firing rate within pulse total number of timestamps/total number of timestamps, entire pulse is bin
 end
 mFRallrunpulse = mean(fr_allrunpulse(pyrs) );
 stdFRallrunpulse = std(fr_allrunpulse(pyrs)./sqrt(length(spikes.times)));

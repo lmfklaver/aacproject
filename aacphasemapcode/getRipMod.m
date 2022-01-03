@@ -25,7 +25,7 @@ function ripmod = getRipMod(basepath,spikes, varargin)
 %   .time
 %
 %   EXAMPLES
-%  ripmod = getRipMod(basepath, spikes, 'epochs', gd_eps, 'ccg', ripple_ccg,'baseTime',[-0.4 -0.3],'baselineAroundPeak',[-.05 .05])
+%  ripmod = getRipMod(basepath, spikes, 'epochs', gd_eps, 'ccg', ripple_ccg,'baseTime',[-0.4 -0.3],'baselineAroundPeak',[-.05 .05],'savemat',true)
 %
 %
 %   NOTES
@@ -83,7 +83,8 @@ ccgBaseBins = ripple_ccg.t >=baseTime(1) & ripple_ccg.t <= baseTime(2);
 ripmod.mod = nanmean(ripple_ccg.ccg(binsAroundPeak,cellsInCCG,rippleInCCG),1)...
     ./nanmean(ripple_ccg.ccg(ccgBaseBins,cellsInCCG,rippleInCCG),1);
 ripmod.time       = binsAroundPeak*ripple_ccg.binsize;
-
-%%save basename.ripmod.mat
+if saveMat
+save([basename '.ripmod.mat'],'ripmod')
+end
 end
 

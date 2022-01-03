@@ -13,10 +13,10 @@ end
 %%
 iUnit = 1;
 a = spkTimNoPulse{iUnit};
-
+%change to gd_eps
 bursty = [];
     for jj = 2 : length(a) - 1
-        bursty(jj) =  any(diff(a(jj-1 : jj + 1)) < 0.006);
+        bursty(jj) =  any(diff(a(jj-1 : jj + 1)) < 0.006); %less than 6ms
     end
  myCalc = length(find(bursty > 0))/length(bursty) 
  

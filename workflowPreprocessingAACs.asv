@@ -79,11 +79,11 @@ params.Probe0idx    = sessionInfo.channels;
 % % params.circDisk     = 2*pi*params.radiusDisk;
 
 % analogin channels
-params.analoginCh.pulse     = 3;
+params.analoginCh.pulse     = 4;
 params.analoginCh.wheel     = 2;
 params.analoginCh.reward    = 1;
 
-params.RippleChan = 23;%% NB: MANUALLY SELECT RIP CHANNEL FROM DAT BECAUSE FINDBESTRIPCHAN SOMETIMES SUCKS
+params.RippleChan = 0;%% NB: MANUALLY SELECT RIP CHANNEL FROM DAT BECAUSE FINDBESTRIPCHAN SOMETIMES SUCKS
 
 
 % % % % % % % % % % % % %
@@ -103,7 +103,7 @@ if isempty(checkLFPfile)
     bz_LFPfromDat;
 end
 
-lfp = bz_GetLFP('all');
+lfp = GetLFP('all');
 
 
 % % % % % % % % % % % % %

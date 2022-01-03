@@ -1,0 +1,43 @@
+
+_analogin.mat 				% getAnaloginVals
+.burstMizuseki.analysis.mat 		% burstinesstest
+.ccginout.analysis.mat 			% getCCGinout
+.cell_metrics.cellinfo.mat		% CellExplorer
+.chanCoords.channelInfo.mat 		% CellExplorer
+.deepSuperficialfromRipple.channelinfo.mat % CellExplorer
+.gd_eps.mat 				% get_gd_eps
+.location.mat 				% AACLocation.m
+.mono_res.cellinfo.mat			% CellExplorer
+.noiseLevel.channelInfo.mat 		% CellExplorer
+.optoStim.manipulation.mat 		% getPulseTimes and then wrapped (preprocessing file)
+.peakRipChan.chaninfo.mat  		%  findRippleLayerChan
+.pethzeta.stats.mat 			% ZETA
+.ph_mod.mat 				% getPhaseMap , maybe getPhaseMod(_bare)
+.phamp.analysis.mat 		 	% spkInstPhaseOutPulse
+.pulsepeth.analysis.mat 		% getPETH_epochs
+.pulses.events.mat 			% getPulseTimes and then wrapped (preprocessing file)
+.rates.analysis.mat	 		% getRatesTrialsBaseStim
+.ripple_ccg.mat 			% getRipCCG
+.ripplepeth.analysis.mat 		% getPETH_epochs
+.ripples.events.mat  			% buzcode bz_FindRipples
+.ripspikes.analysis.mat 		% spikesRipAndCycle
+.run.states.mat 	 		% getRunEpochs 5cm/s (for a minimum of 3 seconds is what we classify as run)
+.session.mat 				% CellExplorer
+.sessionInfo.mat 			% buzcode
+.spikes.cellinfo.mat 			% buzcode (bz_LoadPhy or bz_GetSpikes)
+.STP.mat 				% ShortTermPlasticity_axax(_bare)
+.velocity.mat 				% getVelocity (vel)
+
+% .sortingquality.cellinfo.mat 		% getClusterQuality
+% .run2cm.states.mat 			% 2cm/s for onset rate
+% .wavespec.analysis.mat 			% getAllWavespecsFull
+% .dblZeta.mat 				% replaced with pethzeta.stats.mat;
+% .SleepScoreLFP.LFP.mat		% through sleepscore master
+% .runpeth2cm.analysis.mat 		% getPETH_epochs
+% _CellParams.mat				% old aacphasecode Sam - not using this?
+% .optmod.mat				% old aacphasecode Sam - not using this anymore?
+% .EMGFromLFP.LFP.mat 			% bz_EMGfromLFP
+% .waveforms.mat 			% I think I officially pulled these for something Sam was doing -
+						very very very slow code getAllAACSpikesWidth but the dependencies don't exist anymore
+% .waveformsaacs.mat 			% probably the same as waveforms.mat
+% .ptLFP.analysis.mat 		 	% pulsetriggeredLFP	
