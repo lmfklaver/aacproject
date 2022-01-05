@@ -76,27 +76,15 @@ cd(basepath)
 %%
 gd_eps = get_gd_eps(basepath);
 
-% this needs a cluID  
-mono_res =  bz_GetMonoSynapticallyConnected(basepath,'epoch',gd_eps,'plot',false);
+
+if exist([basename '.mono_res.cellinfo.mat'],'file')
+    load([basename '.mono_res.cellinfo.mat'])
+else 
+    mono_res =  bz_GetMonoSynapticallyConnected(basepath,'epoch',gd_eps,'plot',false);
+end
 
 %% select which units to calculate shorttermplacity over
-
-% ratemod = (nanmean(ccg(:,53:end),2) - nanmean(ccg(:,1:50),2))./nanmean(ccg(:,1:50),2);
-% Question for sam on how this calculation/ why calculated this way vs how in getoptmod
-%(indexing should also be softcoded)(check light artifact)
-
-% if regexp(mod,'inhibition')
-    [~,~,kp] = splitCellTypes(basepath);  % DON'T YOU JUST WANT TO CALCULATE THIS OVER ALL AND THEN SELECT?
-% elseif regexp(mod,'excitation')
-    
-%     kp = find(optmod.p<.01 & optmod.ratemod>1);
-% end
-
-% this needs to be conditional for the type of modulation from the experiment
-% >1 for excitation and <1 for inhibition . now an input, see if making a
-% metadata struct and read from that - would be ideal.
-% kp is the index to the cells that are axax cells that are modulated
-
+[~,~,kp] = splitCellTypes(basepath);  % DON'T YOU JUST WANT TO CALCULATE THIS OVER ALL AND THEN SELECT?
 
 %% define monosynaptically connected pairs  (currently being edited, not super sure what happens here)
 ii=1; % start counter
@@ -149,7 +137,7 @@ for i = 1:length(mono_res) % uncommented, lianne
         %% Organize output
         if size(mono_con_axax,1) == 0
             fprintf('no monosynaptic connections \n')
-            STP = 0
+            STP = 0;
         else
             STP.mono_con_axax_idx = mono_con_axax_idx;
             STP.mono_con_axax = mono_con_axax;

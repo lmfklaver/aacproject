@@ -1084,7 +1084,6 @@ for iSess = sessions  %%Earl makes edits here to be able to loop through session
         % % % % % % % % % % % % %
         % % Ripple Mod x Theta Phase
         % % % % % % % % % % % % %
-         dotSize = 50;
         if doRipTheta
             subplot(6,4,19)
             hold off
@@ -1099,7 +1098,8 @@ for iSess = sessions  %%Earl makes edits here to be able to loop through session
             xlabel('theta phase')
             xlim([-pi pi])
             ylabel('ripple mod')
-            %yline(1,':')
+            yline(1,':')
+            
             lgd = legend({'all AACs','selected AAC'},'Location','northoutside','NumColumns',2);
             legend('boxoff')
         end
@@ -1210,7 +1210,7 @@ for iSess = sessions  %%Earl makes edits here to be able to loop through session
         
         load('chanMap.mat')
         aacChanMap = chanMap == spikes.maxWaveformCh(iAAC)+1;
-        ripChanMap = chanMap == ripples.detectorinfo.detectionchannel+1;
+        ripChanMap = chanMap == rippleChan+1;
         
         plot(xcoords(ripChanMap)-1,ycoords(ripChanMap),'ko','MarkerFaceColor','k')
         hold on
