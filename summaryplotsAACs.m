@@ -67,13 +67,10 @@ for iSess = sessions
     % % % % % % % % % % % % %
     % % PulseEpochs
     pulseEpochs = optoStim.timestamps;
-    gd_eps=get_gd_eps(basepath);
+
     % % % % % % % % % % % % %
     % % runEpochs
     
-    minRunLength = 3;
-    minRunSpeed = 2;
-    %
     %         if exist([basename '.run.states.mat'],'file')
     %             load([basename '.run.states.mat'])
     %             minRunSpeed = run.detectorinfo.detectionparms.minRunSpeed
@@ -834,17 +831,16 @@ for iSess = sessions  %%Earl makes edits here to be able to loop through session
             if exist([basename '.ripplepeth.analysis.mat'],'file')
                 load([basename '.ripplepeth.analysis.mat'])
             else
-            [status]=InIntervals(ripples.peaks,gd_eps);
-            gd_ripplepeaks=ripples.peaks(status);
-%                 [peth] = getPETH_epochs(basepath,'epochs',gd_ripplepeaks,'timwin',[-0.4 0.4], ...
+
+%                 [peth] = getPETH_epochs(basepath,'epochs',gd_ripplepeaks,'timwin',[-0.5 0.5], ...
 %                     'binSize', 0.01, 'saveAs', '.ripplepeth.analysis.mat');
-                   [peth] = getPETH_epochs(basepath,'epochs',gd_ripplepeaks,'timwin',[-1 1], ...
-                    'binSize', 0.01, 'saveAs', '.ripplepeth10long.analysis.mat');
+                   [ripplepeth] = getPETH_epochs(basepath,'epochs',gd_ripplepeaks,'timwin',[-1 1], ...
+                    'binSize', 0.01, 'saveAs', '.10longripplepeth.analysis.mat');
             end
             
-            rateHistoRip    = peth.rate;
-            countPulse      = peth.count;
-            timeEdges       = peth.timeEdges;
+            rateHistoRip    = ripplepeth.rate;
+            countPulse      = ripplepeth.count;
+            timeEdges       = ripplepeth.timeEdges;
             
             %
             % Plot
@@ -857,7 +853,7 @@ for iSess = sessions  %%Earl makes edits here to be able to loop through session
             ylabel('spikes/s')
             h1.EdgeColor = 'none';
             h1.FaceColor = 'k';
-            xlim(peth.timwin)
+            xlim(ripplepeth.timwin)
             
             
             %%
@@ -868,7 +864,7 @@ for iSess = sessions  %%Earl makes edits here to be able to loop through session
             subplot(6,4,[7 11])
             plotSpkOffset = 0;
             selripplesindex = InIntervals(ripples.peaks,gd_eps); %sel ripples only in gd_eps
-            selTrialsRip = peth.trials{iAAC};
+            selTrialsRip = ripplepeth.trials{iAAC};
             for iRip = 1:length(ripples.timestamps(selripplesindex))
                 selRipTr = selTrialsRip{iRip};
                 plot(selRipTr',repmat(plotSpkOffset,1,length(selRipTr)),'k.');
@@ -1079,7 +1075,16 @@ for iSess = sessions  %%Earl makes edits here to be able to loop through session
         % Histogram Pref Theta Phase for each Spike
         % % % % % % % % % % % %
         subplot(6,4,23)
-        
+        plot(spkInstPhaseStruct.phase{1},spkInstPhaseStruct.amp{1},'.')
+        xlabel('inst phase')
+        ylabel('inst amp')
+        %
+        subplot(2,1,2)
+        histogram('BinEdges', histoEdges, 'BinCounts', binnedHisto)
+        hold on
+        plot(histoEdges,.25*max(binnedHisto)+cos(histoEdges)*.25*max(binnedHisto),'k')
+        xlabel('inst phase')
+        ylabel('count')
         %%
         % % % % % % % % % % % % %
         % % Ripple Mod x Theta Phase

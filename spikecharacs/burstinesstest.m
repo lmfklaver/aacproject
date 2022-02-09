@@ -1,4 +1,4 @@
-% a = [0 1.2 1.3 1.4 1.5 2 3 5.11 5.2 5.3 16 17.1 17.2 19]
+
 
 % Exclude pulses
 pulseEpochs = optoStim.timestamps;

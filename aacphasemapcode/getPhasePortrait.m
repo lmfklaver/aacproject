@@ -116,7 +116,7 @@ for k = 1:size(gd_eps,1)
 end
 
 % Load spikes
-spikes = bz_GetSpikes('basepath',basepath);
+load([basename  '.spikes.cellinfo.mat'])
 
 %% Set Frequencies
 
@@ -183,7 +183,7 @@ for iFreq = 1:nfreq-1
             
             %only take spikes outside of gd_eps (no stim periods)
             [status] = InIntervals(spikes.times{iUnit},gd_eps);
-            
+            if ~isempty(status)
             %smooth spike train
             k = gaussian2Dfilter([100 1],[10 1]);
             instRate = nanconvn(histc(spikes.times{iUnit}(status), filtered.timestamps(1:end)),k);
@@ -251,6 +251,7 @@ for iFreq = 1:nfreq-1
 % %                 end
 % %             end
             %%%%%%
+            end
         end
     end
     

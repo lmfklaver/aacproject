@@ -72,6 +72,8 @@ ix = 1;
 load([basename '.ripples.events.mat'])
 % rip = LoadEvents([basepath '/' basename '.evt.rip']);
 % t   = rip.time(cellfun(@any,regexp(rip.description,'start')));
+rips = ripples.timestamps(:,1);
+
 % % spikes = bz_LoadPhy
 % % for j = 1:length(spikes.times)
 % %     [status] = InIntervals(spikes.times{j},gd_eps);
@@ -87,13 +89,13 @@ load([basename '.ripples.events.mat'])
 % %     ix = ix+1;
 % % end
 rips = ripples.timestamps(:,1);
-selSpikes.times=[spikes.times {rips}];
+selSpikes.times=[spikes.times {rips}]
 [rip_ccg, t] = CCG(selSpikes.times,[],'binSize',ccgbin,'duration',ccgdur,'norm','rate');
 
 
 ripple_ccg.ccg          = rip_ccg;
 ripple_ccg.binsize      = ccgbin;
-ripple_ccg.t            = t;
+ripple_ccg.t            = t
 ripple_ccg.ccgdur       = ccgdur;
 ripple_ccg.ccglength    = ccgbin*(ccgdur); % for plotting
 
@@ -115,7 +117,7 @@ if saveMat
         end
     end
     
-    save([basename '.ripple_ccg.mat'],'ripple_ccg');
+    save([basename '.ripple_ccg.mat'],'ripple_ccg')
 end
 
 end

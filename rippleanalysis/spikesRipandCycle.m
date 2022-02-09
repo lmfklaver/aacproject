@@ -1,4 +1,4 @@
-
+6
 
 basepath = cd; basename = bz_BasenameFromBasepath(cd);
 

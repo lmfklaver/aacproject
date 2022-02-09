@@ -16,7 +16,7 @@ for iSess = sessions
     load([basename '.ripmod.mat'])
     load([basename '.ripple_ccg.mat'])
     load([basename '.spikes.cellinfo.mat'])
-    [pyrs, ints, aacs] = splitCellTypes(basepath);
+    load([basename '_celltypes.mat']);
      if ~isempty(aacs)
           cumul_ripmod.cumul_ripmod_aac        = [cumul_ripmod_aac, ph_mod.ripmod.mod(aacs)'];
                 for iAAC = aacs

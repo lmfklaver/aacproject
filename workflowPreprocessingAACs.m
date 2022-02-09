@@ -1,14 +1,15 @@
 %%%%%%% Session IN %%%%%%
 
-buzcodePath = 'C:\Users\lklaver\Documents\GitHub\buzcode\';
-tsnebuzPath = 'C:\Users\lklaver\Documents\GitHub\buzcode\externalPackages\tSNE_matlab\';
-cellExplorerPath = 'C:\Users\lklaver\Documents\GitHub\CellExplorer\';
-aacprojectPath = 'C:\Users\lklaver\Documents\GitHub\aacproject\';
+buzcodePath = 'C:\Users\English-Admin\Documents\GitHub\buzcode';
+tsnebuzPath = 'C:\Users\English-Admin\Documents\GitHub\buzcode\externalPackages\tSNE_matlab';
+cellExplorerPath = 'C:\Users\English-Admin\Documents\GitHub\CellExplorer';
+aacprojectPath = 'C:\Users\English-Admin\Documents\GitHub\lklaver\aacproject';
 
 
 addpath(genpath(buzcodePath))
 addpath(genpath(aacprojectPath))
 
+basepath = cd; basename = bz_BasenameFromBasepath(basepath);
 
 % % % % % % % % % % % % %
 % % Kilosort
@@ -32,7 +33,7 @@ load('rez.mat')
 %because these rez.ops paths are the wrong paths sometimes, make sure to
 %change them before running convert
 
-ks1path = 'F:\AACRecordingsSorted\m231_201120_094939\Kilosort_2021-12-14_075457';
+%ks1path = 'D:\Data\mouse1\mouse1_180412_2\Kilosort_2021-12-02_170538';
 
 rez.ops.basepath = basepath; 
 rez.ops.basename = basename; 
@@ -79,9 +80,9 @@ params.Probe0idx    = sessionInfo.channels;
 % % params.circDisk     = 2*pi*params.radiusDisk;
 
 % analogin channels
-params.analoginCh.pulse     = 3;
-params.analoginCh.wheel     = 2;
-params.analoginCh.reward    = 1;
+params.analoginCh.pulse     = 1;
+params.analoginCh.wheel     = 0;
+params.analoginCh.reward    = 8;
 
 params.RippleChan = 23;%% NB: MANUALLY SELECT RIP CHANNEL FROM DAT BECAUSE FINDBESTRIPCHAN SOMETIMES SUCKS
 
@@ -116,7 +117,7 @@ chanRip = params.RippleChan;
 
 % Make sure you indeed have the highest ripple channel 
 % edit findPyramidalLayer.m
-edit findRippleLayerChan
+%edit findRippleLayerChan
 
 % Redo bz_FindRipples if layer is not the same 
 % Note Well: If different ripple layer per shank - > multiple ripples.events.mats?
@@ -129,10 +130,24 @@ end
 
 
 % % % % % % % % % % % % %
+% % Load Spikes
+% % % % % % % % % % % % %
+
+% First make sure your cluresfetspk are inside the basepath with the xml
+% and datfile
+% make sure you comment out the default of grabbing a ks1path in
+% bz_GetSpikes
+
+
+%%TOGGLE%%
+% spikes = bz_LoadPhy; % if from phy output
+spikes = bz_GetSpikes('sortingMethod','clu'); % if from CluResFetSpk 
+
+% % % % % % % % % % % % %
 % % Detect Pulses
 % % % % % % % % % % % % %
 
-cd(analogin_path)
+%cd(analogin_path) %don't think we use this anymore
 
 % % First get info of analogin
 rhdfilename = [basename '_info.rhd'];
@@ -144,7 +159,7 @@ analogin_file   = [basename, '_analogin.dat'];
 if params.saveMat
     save([basename '_analogin'], 'analogin')
 end
-
+load([basename '_analogin.mat'])
 [pulseEpochs] = getPulseTimes(analogin); %% NB pulsethreshold needs to be set per recording
 
 % if params.saveMat
@@ -180,25 +195,12 @@ save([basename '.pulses.events.mat'],'pulses');
 save([basename '.optoStim.events.mat'],'optoStim');
 
 
-% % % % % % % % % % % % %
-% % Load Spikes
-% % % % % % % % % % % % %
-
-% First make sure your cluresfetspk are inside the basepath with the xml
-% and datfile
-% make sure you comment out the default of grabbing a ks1path in
-% bz_GetSpikes
-
-
-%%TOGGLE%%
-% spikes = bz_LoadPhy; % if from phy output
-spikes = bz_GetSpikes('sortingMethod','clu'); % if from CluResFetSpk 
-
 
 % % % % % % % % % % % % %
 % % Run CellExplorer
 % % % % % % % % % % % % %
-
+basepath = cd
+addpath(genpath(cellExplorerPath))
 session = sessionTemplate(basepath,'showGUI',true);
 % Make sure that all of this session info is correct 
 % and append any session info you want to add: 
@@ -283,70 +285,128 @@ gd_eps=get_gd_eps(basepath);
 % % % % % % % % % % % % %
 % % Cluster Quality
 % % % % % % % % % % % % %
-clusters = getClusterQuality(basepath)
+[clusters] = getClusterQuality(basepath)
+
 
 % % % % % % % % % % % % %
 % % CCG in out
 % % % % % % % % % % % % %
-
-%Ask Lianne
-[ccginout] = getCCGinout(basepath, spikes, pulseEpochs) %gd_eps?
+[pulseEpochs] = optoStim.timestamps;
+[ccginout] = getCCGinout(basepath, spikes, pulseEpochs); %gd_eps?
 
 % % % % % % % % % % % % %
-% % RUN thngs
+% % RUN things
 % % % % % % % % % % % % %
 
 %getVelocity
 %getRunEpochs ( 5cm/s)
-selRunEpochsIdx = run.epochs(:,2)-run.epochs(:,1) >3; % longer than three seconds
-getRunEpochs
-[vel] = getVelocity(analogin,'doFigure',false,'downsampleFactor',3000);
-[run] = getRunEpochs(basepath,vel,'minRunSpeed',minRunSpeed,'saveMat',true,'saveAs','.run2cm.states.mat');
 
+minRunSpeed = 5
+minRunLength = 3
+[vel] = getVelocity(analogin,'doFigure',false,'downsampleFactor',3000);
+[run] = getRunEpochs(basepath,vel,'minRunSpeed',minRunSpeed,'saveMat',true,'saveAs','.run.states.mat');
+%CellExplorer expects a variable name that matches the .states.mat 
+% In this case "run" should be "run5cm"
+
+%[selRunEpochs,vel,run]=PETHRun(analogin,basepath,minRunLength,minRunSpeed)
+
+%%%%Ask lianne PETHRun doesn't exist
+%selRunEpochsIdx = run.epochs(:,2)-run.epochs(:,1) >3; % longer than three seconds
 
 % % % % % % % % % % % % %
 % % Pulse PETH
 % % % % % % % % % % % % %
-[peth] = getPETH_epochs(basepath,'epochs',pulseEpochs,'timwin',[-0.4 0.4], ...
-               'binSize', 0.01, 'saveAs', '.pethPulse.mat')
-
+[pulsepeth] = getPETH_epochs(basepath,'epochs',optoStim.timestamps,'timwin',[-0.5 0.5], ...
+               'binSize', 0.01);
+save([basename '.pulsepeth.analysis.mat'], 'pulsepeth') ;
+% % % % % % % % % % % % %
+% % Ripple PETH
+% % % % % % % % % % % % %          
+[status]=InIntervals(ripples.peaks,gd_eps);
+gd_ripplepeaks=ripples.peaks(status);
+[ripplepeth] = getPETH_epochs(basepath,'epochs',gd_ripplepeaks,'timwin',[-0.5 0.5], ...
+                     'binSize', 0.01);
+save([basename '.ripplepeth.analysis.mat'], 'ripplepeth') ;
 % % % % % % % % % % % % %
 % % RipCCG
 % % % % % % % % % % % % %
-[ripple_ccg_mac] = getRipCCG(basepath,spikes,'epochs',gd_eps,'ccgbin', 0.02,'ccgdur', .8);
-[ripple_ccg_mic] = getRipCCG(basepath,spikes,'epochs',gd_eps,'ccgbin', 0.001,'ccgdur', .1);
-[ripple_ccg] = getRipCCG(basepath,spikes,'epochs',gd_eps,'save_mat',true)
+%[ripple_ccg_mac] = getRipCCG(basepath,spikes,'epochs',gd_eps,'ccgbin', 0.02,'ccgdur', .8);
+%[ripple_ccg_mic] = getRipCCG(basepath,spikes,'epochs',gd_eps,'ccgbin', 0.001,'ccgdur', .1);
+[ripple_ccg] = getRipCCG(basepath,spikes,'epochs',gd_eps,'ccgbin', 0.01,'ccgdur', 1,'saveMat',true);
 
 % % % % % % % % % % % % %
 % % Run ripmod code
 % % % % % % % % % % % % %
-
-ripmod = getRipMod(basepath, spikes, 'epochs', gd_eps, 'ccg', ripple_ccg,'baseTime',[-0.4 -0.3],'baselineAroundPeak',[-.05 .05],'savemat',false)
+[ripmod] = getRipMod(basepath, spikes, 'epochs', gd_eps, 'ccg', ripple_ccg,'baseTime',[-0.4 -0.3],'baselineAroundPeak',[-.05 .05],'saveMat',true);
 %get stats
-
-% % % % % % % % % % % % %
-% % Get PHAMP
-% % % % % % % % % % % % %
-phaseFrequencyAmplitude %script needs to turn into function
 
 % % % % % % % % % % % % %
 % % Burstiness
 % % % % % % % % % % % % %
-burstinesstest  %script needs to turn into function
+[burstIndex] = burstinessMizuseki_epochs(basepath,spikes,'epochs',gd_eps, 'saveMat',true)
 
+% % % % % % % % % % % % %
+% % Zeta
+% % % % % % % % % % % % %
+[zeta] = runZeta(basepath,optoStim.timestamps(:,1),'saveMat',true);
+
+
+% % % % % % % % % % % % %
+% % Cell Types
+% % % % % % % % % % % % %
+[pyrs, ints, aacs] = splitCellTypes(basepath); %Change to ignore Cell explorer and just look at PETH?
+
+% Manually Check PulsePETHs
+for i=1:size(spikes.times,2)        
+    afigure = figure,;
+    hold on;
+    load([basename '.pulsepeth.analysis.mat']);
+    subplot(1,3,1);
+            h2 = histogram('BinEdges',pulsepeth.timeEdges, ...
+                'BinCounts',pulsepeth.rate(i,:));
+            box off
+            title(['PETH Stim' num2str(i)]);
+            xlabel('time(s)');
+            ylabel('spikes/s');
+            h2.EdgeColor = 'none';
+            h2.FaceColor = 'k';
+            xlim(pulsepeth.timwin);
+    hold off
+end
+% % Manually enter AACs
+% % aacs=[10 11];
+% % for selac=1:length(aacs)
+% % pyrsnotaacs = pyrs~=aacs(selac);
+% % pyrs=pyrs(pyrsnotaacs);
+% % end
+% % for selac=1:length(aacs)
+% % intsnotaacs = ints~=aacs;
+% % ints=ints(pyrsnotaacs);
+% % end
+allcelltypes = cell(1,size(spikes.times,2));
+allcelltypes(ints)={'int'};
+allcelltypes(pyrs)={'pyr'};
+allcelltypes(aacs)={'aac'};
+save([basename '_celltypes'],'aacs', 'pyrs', 'ints', 'allcelltypes');
 % % % % % % % % % % % % %
 % % Spikes Per Ripple Cycle
 % % % % % % % % % % % % %
-spikesRipAndCycle %script needs to turn into function
+
+[spikesRipNum, numSpkPerCycPerRip] = getNumSpkRip(basepath,'units','all','saveMat',true)
 
 % % % % % % % % % % % % %
 % % Run STP code
 % % % % % % % % % % % % %
-ShortTermPlasticity_axax_bare %Lianne
-
+[STP] = ShortTermPlasticity(basepath,'saveMat',true);
+% % Lianne
+% % Unable to perform assignment because dot indexing is not supported for variables of this
+% % type.
+% % Error in ShortTermPlasticity (line 143)
+% %     STP.kp = kp; 
 % % % % % % % % % % % % %
 % % Run getPhaseMap code
 % % % % % % % % % % % % %
+[ph_mod] = getPhasePref(basepath, 'epochs', run.epochs,'saveMat',true)
 
 
 

@@ -113,7 +113,7 @@ load([basename  '.STP.mat']) % edit LK
 
 gd_eps              = STP.gd_eps;
 pre_idx             = STP.pre_idx;
-mono_con_axax       = STP.mono_con_axax;
+mono_con       = STP.mono_con;
 post_idx            = STP.post_idx;
 
 %% Get correct LFP channel (ripple channel)
@@ -155,8 +155,8 @@ for i = 1:nfreq-1
     filter.data = BandpassFilter(double(d), 1250 ,[freq(i) freq(i+1)]); % Filter the data for the specified frequency made above
     
     %get inst phase and amplitude
-    filtered.phase  = InstPhase(filter.data ); % inst phase using the hilbert transform
-    filtered.amp    = InstAmplitude(filter.data ); % inst amp using hilbert transorm
+    filtered.phase  = InstPhase(filter.data); % inst phase using the hilbert transform
+    filtered.amp    = InstAmplitude(filter.data); % inst amp using hilbert transorm
     filtered.timestamps     = ts ; 
     filtered.sampleRate   = xml.lfpSampleRate;
     filtered.filterparms.passband = [freq(i) freq(i+1)]; % record passband range of the filter for that loop
@@ -203,7 +203,9 @@ for i = 1:nfreq-1
             
             %only take spikes outside of gd_eps (no stim periods)
             [status] = InIntervals(spikes.times{j},gd_eps);
-           
+            
+             if ~isempty(status)
+                            
             
             k = gaussian2Dfilter([100 1],[10 1]);
             
@@ -221,6 +223,7 @@ for i = 1:nfreq-1
             %get spike phase distribution per freq. band %% nb check
             % because this looks redundant with bz_getPhasemaps
             spk_ph =   interp1(filtered.timestamps, filtered.phase,ref,'nearest');
+
             [spk_ph_cnt,spk_ph_bin] = histc(spk_ph,ph_bin);
             ph_rate(i,:,j) = spk_ph_cnt./occ_bin;
             
@@ -236,7 +239,7 @@ for i = 1:nfreq-1
                 
                 %get post synaptic cells
                 for k = 1:length(kp_post)
-                    ix = find(ismember(mono_con_axax, [j kp_post(k)], 'rows'));
+                    ix = find(ismember(mono_con, [j kp_post(k)], 'rows'));
                     target = spikes.times{kp_post(k)};
                     
                     %restrict to good epochs
@@ -275,9 +278,10 @@ for i = 1:nfreq-1
                     
                 end
             end
-            
+
         end
         
+        end
     end
     i
     
@@ -352,16 +356,19 @@ if doGammaThetaMod
     
 end
 %% Calculate the ripple CCG and get the ripple modulation:
-
-if doRippleCCG
-    ripple_ccg  = getRipCCG(basepath,spikes,'epochs',gd_eps,'ccgbin', 0.005,'ccgtotsamples',10001,'saveMat',false);
-    ripmod      = getRipMod(basepath,'ccg',ripple_ccg,'saveMat',false);
-    
-    ph_mod.ripmod           = ripmod; % with ripmod.mod and ripmod.time
-    ph_mod.ripple_ccg       = ripple_ccg; % with .ccg, .ccglength and .binlength and .binSize
-end
-
-
+% % 
+% % if doRippleCCG
+% %     [ripple_ccg] = getRipCCG(basepath,spikes,'epochs',gd_eps,'ccgbin', 0.01,'ccgdur', 1,'saveMat',true);
+% %     ripmod = getRipMod(basepath, spikes, 'epochs', gd_eps, 'ccg', ripple_ccg,'baseTime',[-0.4 -0.3],'baselineAroundPeak',[-.05 .05],'saveMat',true);
+% %     
+% %     ph_mod.ripmod           = ripmod; % with ripmod.mod and ripmod.time
+% %     ph_mod.ripple_ccg       = ripple_ccg; % with .ccg, .ccglength and .binlength and .binSize
+% % end
+% % 
+load([basename '.ripple_ccg.mat'])
+ph_mod.ripple_ccg = ripple_ccg;
+load([basename '.ripmod.mat'])
+ph_mod.ripmod = ripmod;
 %% And save
 
 if saveMat

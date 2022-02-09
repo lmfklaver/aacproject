@@ -88,9 +88,9 @@ binsAroundPeak= ripple_ccg.t >=baselineAroundPeak(1) & ripple_ccg.t <= baselineA
 ccgBaseBins = ripple_ccg.t >=baseTime(1) & ripple_ccg.t <= baseTime(2);
 
 
-ripmod.mod = nanmean(ripple_ccg.ccg(binsAroundPeak,cellsInCCG,rippleInCCG),1)...
+ripmod.mod  = nanmean(ripple_ccg.ccg(binsAroundPeak,cellsInCCG,rippleInCCG),1)...
     ./nanmean(ripple_ccg.ccg(ccgBaseBins,cellsInCCG,rippleInCCG),1);
-ripmod.time       = binsAroundPeak*ripple_ccg.binsize;
+ripmod.time = ripple_ccg.t
 if saveMat
 save([basename '.ripmod.mat'],'ripmod')
 end

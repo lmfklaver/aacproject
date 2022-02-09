@@ -19,7 +19,7 @@ function STP = ShortTermPlasticity(basepath,varargin)
 %   Name-value pairs:
 %   'basename'  - only specify if other than basename from basepath
 %   'saveMat'   - saving the results to [basename,
-%                   '.burstMizuseki.analysis.mat']
+%                   '.burstMiz/useki.analysis.mat']
 %   'saveAs'    - if you want another suffix for your save
 %
 %   OUTPUTS
@@ -74,6 +74,10 @@ gd_eps = get_gd_eps(cd,'saveMat',false);
 % what defines a good epoch
 mono_res =  bz_GetMonoSynapticallyConnected(basepath,'epoch',gd_eps,'plot',false);
 
+if strcmpi(kp,'all')
+    kp = 1:size(mono_res.sig_con,1);
+end
+
 %% define monosynaptically connected pairs
 ii=1; % start counter
 mono_con_idx = [];
@@ -85,69 +89,68 @@ acg_pre =[];
 acg_post =[];
 prob =[]; % reserve spaces
 
-for i = 1:length(mono_res) %
-    if ~isempty(mono_res(i).sig_con)%
-        mono_con_idx =  ismember(mono_res.sig_con(:,2),kp);
-        % find which interneurons of the monosynaptically connected pairs
-        % are AACs, this uses cell that are modulated by stimulation, not
-        % sure if this is the best way for selecting cells
+mono_con_idx =  ismember(mono_res.sig_con(:,2),kp);
+% find which interneurons of the monosynaptically connected pairs
+% are AACs, this uses cell that are modulated by stimulation, not
+% sure if this is the best way for selecting cells
+
+mono_con = mono_res.sig_con(mono_con_idx,:); %
+pre_idx = [pre_idx; mono_res.completeIndex(mono_con(:,1),:)]; %
+post_idx = [post_idx; mono_res.completeIndex(mono_con(:,2),:)]; %
+for k = 1:size(mono_con,1)
+    prob_uncor(ii,:) = mono_res.prob_noncor(:,mono_con(k,1),mono_con(k,2));
+    acg_pre(ii,:)  = mono_res.prob_noncor(:,mono_con(k,1),mono_con(k,1)); % ACG of presynaptic cells
+    acg_post(ii,:)  = mono_res.prob_noncor(:,mono_con(k,2),mono_con(k,2)); %
+    prob(ii,:)  = mono_res.prob(:,mono_con(k,1),mono_con(k,2)); % connection probably from from the mono_res
+    ii= ii+1;
+end
+
+
+spikes = bz_GetSpikes('basepath', basepath);
+%% needed for plotting
+for i = 1:size(mono_con,1)
+    if size(mono_con,1) == 0
+        fprintf('no monosynaptic connections \n')
+        continue
+    else
         
-        mono_con = mono_res.sig_con(mono_con_idx,:); %
-        pre_idx = [pre_idx; mono_res.completeIndex(mono_con(:,1),:)]; %
-        post_idx = [post_idx; mono_res.completeIndex(mono_con(:,2),:)]; %
-        for k = 1:size(mono_con,1)
-            prob_uncor(ii,:) = mono_res.prob_noncor(:,mono_con(k,1),mono_con(k,2));
-            acg_pre(ii,:)  = mono_res.prob_noncor(:,mono_con(k,1),mono_con(k,1)); % ACG of presynaptic cells
-            acg_post(ii,:)  = mono_res.prob_noncor(:,mono_con(k,2),mono_con(k,2)); %
-            prob(ii,:)  = mono_res.prob(:,mono_con(k,1),mono_con(k,2)); % connection probably from from the mono_res
-            ii= ii+1;
-        end
-        
-        
-        spikes = bz_GetSpikes('basepath', basepath);
-        %% needed for plotting
-        for i = 1:size(mono_con,1)
-            if size(mono_con,1) == 0
-                fprintf('no monosynaptic connections \n')
-                continue
-            else
-                
-                ref = spikes.times{mono_con(i,1)};
-                target = spikes.times{mono_con(i,2)};
-                [status] = InIntervals(ref,gd_eps);
-                ref = ref(status);
-                [status] = InIntervals(target,gd_eps);
-                target = target(status);
-                ses(i) = ShortTermCCG(ref,target,.0008,.2,'time', [ logspace(log10(5),log10(3000),20)/1000 inf]);
-            end
-        end
-        
-        %% Organize output
-        if size(mono_con,1) == 0
-            fprintf('no monosynaptic connections \n')
-            STP = 0
-        else
-            STP.mono_con_idx = mono_con_idx;
-            STP.mono_con = mono_con;
-            STP.pre_idx = pre_idx;
-            STP.post_idx = post_idx;
-            STP.prob_uncor = prob_uncor;
-            STP.acg_pre = acg_pre;
-            STP.acg_post = acg_post;
-            STP.prob = prob;
-            STP.gd_eps = gd_eps;
-            STP.ses = ses; % really only needed for plotting
-            
-        end
+        ref = spikes.times{mono_con(i,1)};
+        target = spikes.times{mono_con(i,2)};
+        [status] = InIntervals(ref,gd_eps);
+        ref = ref(status);
+        [status] = InIntervals(target,gd_eps);
+        target = target(status);
+        ses(i) = ShortTermCCG(ref,target,.0008,.2,'time', [ logspace(log10(5),log10(3000),20)/1000 inf]);
     end
-    STP.kp = kp;
-    
-    %%
-    %save all variable to output file
-    if saveMat
-        save([basename  saveAs], 'STP')
-    end
+end
+
+%% Organize output
+if size(mono_con,1) == 0
+    fprintf('no monosynaptic connections \n')
+    STP.mono_con = {'no monosynaptic connections'};
+else
+    STP.mono_con_idx = mono_con_idx;
+    STP.mono_con = mono_con;
+    STP.pre_idx = pre_idx;
+    STP.post_idx = post_idx;
+    STP.prob_uncor = prob_uncor;
+    STP.acg_pre = acg_pre;
+    STP.acg_post = acg_post;
+    STP.prob = prob;
+    STP.gd_eps = gd_eps;
+    STP.ses = ses; % really only needed for plotting
     
 end
+STP.kp = {kp};
+
+
+
+%%
+%save all variable to output file
+if saveMat
+    save([basename  saveAs], 'STP')
 end
+
+end
+% end
 

@@ -57,7 +57,7 @@ cd(basepath)
 cd(basepath)
 basename = bz_BasenameFromBasepath(basepath);
 load([basename '.ripples.events.mat']);
-spikes = bz_LoadPhy;
+load([basename '.spikes.cellinfo.mat'],'spikes')
 
 
 fils  = getAllExtFiles(basepath,'rip',1);
@@ -149,7 +149,7 @@ for iUnit = units
         end
         
         % and then num spks per cycle per ripple
-        numSpkPerCycPerRip{iUnit}{iRip} = sum(numSpkPerCyc);
+        numSpkPerCycPerRip{iUnit}(iRip) = sum(numSpkPerCyc);
     end
 end
 
