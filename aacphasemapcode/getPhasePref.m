@@ -111,9 +111,8 @@ selBins = find(ph_mod.freq>=freqRange(1) & ph_mod.freq<=freqRange(2));
         for iUnit = 1:size(ph_rate1,3)
             y_unit = ph_rate1(:,:,iUnit); % select unit
             y = squeeze((mean(y_unit,1))); % to average over frequencies
-            rvect = nanmean(y(1,:) .*exp(1i .* ph_mod.ph_bin));% because compressed to 1 mean freq
-            [~,modal_phase] = max(rvect)%
-            ph_pref_temp(iUnit) = modal_phase;
+            [~, modal_phase] = max(y);%(1,:) .*exp(1i .* ph_mod.ph_bin));% because compressed to 1 mean freq
+            ph_pref_temp(iUnit) = ph_mod.ph_bin(modal_phase);
         end
 
         ph_pref = ph_pref_temp;

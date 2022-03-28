@@ -69,7 +69,7 @@ cd(basepath)
 %%
 
 % Load in the spikes
-% spikes = bz_LoadPhy;
+spikes = bz_LoadPhy;
 
 if ~isempty(epochs)
     % Get spikes in or out epoch
@@ -83,7 +83,7 @@ if ~isempty(epochs)
     
     % Calculate CCGs
     
-    [ccgIN,t]   = CCG(spkTimIN,[],'Fs',Fs, 'binSize',binSize,'duration', duration, 'norm', normalization);
+    [ccgIN,t]   = CCG(spkTimIN,'Fs',Fs, 'binSize',binSize,'duration', duration, 'norm', normalization);
 else
     spkTimOUT = spikes.times;
 end

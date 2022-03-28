@@ -3,15 +3,14 @@
 load([basename '.ripples.events.mat']);
 load([basename '.optoStim.manipulation.mat']);
 load([basename '.spikes.cellinfo.mat']);
-load([basename '.cell_metrics.cellinfo.mat']);
-
+load([basename '_celltypes.mat']);
 pulseEpochs = optoStim.timestamps;
 
 [peakInPulse, pulseWithRip] = findRipplesInPulse(ripples, pulseEpochs);
 
 
-pyrLog = cellfun(@(a) contains(a, 'Pyr'),cell_metrics.putativeCellType);
-pyrInd = find(pyrLog)
+pyrLog = cellfun(@(a) contains(a, 'pyr'),allcelltypes);
+pyrInd = find(pyrLog);
 %%
 for iPyr = pyrInd
     [status,interval] = InIntervals(spikes.times{iPyr},ripples.timestamps(pulseWithRip,:));
@@ -29,7 +28,7 @@ for iPyr = pyrInd
             numSpkperRip_ONper(iPyr,iInterval) = sum(ismember(iInterval,interval));
         end
         for iIntervalNO = unique(intervalNO(intervalNO~=0))';
-            numSpkperRip_OFFper(iPyr,iInterval) = sum(ismember(iIntervalNO,intervalNO));
+            numSpkperRip_OFFper(iPyr,iIntervalNO) = sum(ismember(iIntervalNO,intervalNO));
         end
     % gemiddelde spikes per ripple, opslaan numSpks per rip?
     

@@ -23,7 +23,7 @@ function [ripple_ccg] = getRipCCG(basepath,spikes,varargin)
 %   NOTES
 %
 %   HISTORY
-%
+%   % 2/2022 added gd_eps selection back to ripples
 %   TO-DO
 %   If no gd_eps --> gd_eps is entire session?
 
@@ -86,8 +86,10 @@ load([basename '.ripples.events.mat'])
 % %     NN(ix) = sum(status);
 % %     ix = ix+1;
 % % end
-rips = ripples.timestamps(:,1);
-selSpikes.times=[spikes.times {rips}];
+gd_eps=get_gd_eps(basepath);
+[status,interval]=InIntervals(ripples.peaks(:,1),gd_eps);
+gdrips = ripples.timestamps(status,1);
+selSpikes.times=[spikes.times {gdrips}];
 [rip_ccg, t] = CCG(selSpikes.times,[],'binSize',ccgbin,'duration',ccgdur,'norm','rate');
 
 

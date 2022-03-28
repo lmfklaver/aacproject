@@ -80,11 +80,11 @@ params.Probe0idx    = sessionInfo.channels;
 % % params.circDisk     = 2*pi*params.radiusDisk;
 
 % analogin channels
-params.analoginCh.pulse     = 1;
-params.analoginCh.wheel     = 0;
+params.analoginCh.pulse     = 3;
+params.analoginCh.wheel     = 2;
 params.analoginCh.reward    = 8;
 
-params.RippleChan = 23;%% NB: MANUALLY SELECT RIP CHANNEL FROM DAT BECAUSE FINDBESTRIPCHAN SOMETIMES SUCKS
+params.RippleChan = 30;%% NB: MANUALLY SELECT RIP CHANNEL FROM DAT BECAUSE FINDBESTRIPCHAN SOMETIMES SUCKS
 
 
 % % % % % % % % % % % % %
@@ -140,8 +140,8 @@ end
 
 
 %%TOGGLE%%
-% spikes = bz_LoadPhy; % if from phy output
-spikes = bz_GetSpikes('sortingMethod','clu'); % if from CluResFetSpk 
+spikes = bz_LoadPhy; % if from phy output
+%spikes = bz_GetSpikes('sortingMethod','clu'); % if from CluResFetSpk 
 
 % % % % % % % % % % % % %
 % % Detect Pulses
@@ -154,12 +154,19 @@ rhdfilename = [basename '_info.rhd'];
 read_Intan_RHD2000_file_noprompt(rhdfilename)
 
 analogin_file   = [basename, '_analogin.dat'];
-[analogin.pulse, analogin.pos, analogin.reward, analogin.ts] = getAnaloginVals(basename,params,board_adc_channels,params);
+[analogin] = getAnaloginVals(basename,params,board_adc_channels,params);
 
 if params.saveMat
     save([basename '_analogin'], 'analogin')
 end
 load([basename '_analogin.mat'])
+
+%Soft fix for adding ts and sr to analogin struct
+sr=30000
+analogin.ts      = (1:length(analogin.pos))/sr;
+analogin.sr      = sr;
+save([basename '_analogin.mat'],'analogin')
+
 [pulseEpochs] = getPulseTimes(analogin); %% NB pulsethreshold needs to be set per recording
 
 % if params.saveMat
@@ -332,7 +339,7 @@ save([basename '.ripplepeth.analysis.mat'], 'ripplepeth') ;
 % % % % % % % % % % % % %
 %[ripple_ccg_mac] = getRipCCG(basepath,spikes,'epochs',gd_eps,'ccgbin', 0.02,'ccgdur', .8);
 %[ripple_ccg_mic] = getRipCCG(basepath,spikes,'epochs',gd_eps,'ccgbin', 0.001,'ccgdur', .1);
-[ripple_ccg] = getRipCCG(basepath,spikes,'epochs',gd_eps,'ccgbin', 0.01,'ccgdur', 1,'saveMat',true);
+[ripple_ccg] = getRipCCGFixed(basepath,spikes,'epochs',gd_eps,'ccgbin', 0.01,'ccgdur', 1,'saveMat',true);
 
 % % % % % % % % % % % % %
 % % Run ripmod code
@@ -374,41 +381,37 @@ for i=1:size(spikes.times,2)
     hold off
 end
 % % Manually enter AACs
-% % aacs=[10 11];
+% % aacs=[22];
 % % for selac=1:length(aacs)
 % % pyrsnotaacs = pyrs~=aacs(selac);
 % % pyrs=pyrs(pyrsnotaacs);
 % % end
 % % for selac=1:length(aacs)
 % % intsnotaacs = ints~=aacs;
-% % ints=ints(pyrsnotaacs);
+% % ints=ints(intsnotaacs);
 % % end
-allcelltypes = cell(1,size(spikes.times,2));
-allcelltypes(ints)={'int'};
-allcelltypes(pyrs)={'pyr'};
-allcelltypes(aacs)={'aac'};
-save([basename '_celltypes'],'aacs', 'pyrs', 'ints', 'allcelltypes');
+% % allcelltypes = cell(1,size(spikes.times,2));
+% % allcelltypes(ints)={'int'};
+% % allcelltypes(pyrs)={'pyr'};
+% % allcelltypes(aacs)={'aac'};
+% % save([basename '_celltypes'],'aacs', 'pyrs', 'ints', 'allcelltypes');
 % % % % % % % % % % % % %
 % % Spikes Per Ripple Cycle
 % % % % % % % % % % % % %
 
-[spikesRipNum, numSpkPerCycPerRip] = getNumSpkRip(basepath,'units','all','saveMat',true)
+[ripspikes] = getNumSpkRip(basepath,'units','all','saveMat',true)
 
 % % % % % % % % % % % % %
 % % Run STP code
 % % % % % % % % % % % % %
 [STP] = ShortTermPlasticity(basepath,'saveMat',true);
-% % Lianne
-% % Unable to perform assignment because dot indexing is not supported for variables of this
-% % type.
-% % Error in ShortTermPlasticity (line 143)
-% %     STP.kp = kp; 
+
 % % % % % % % % % % % % %
 % % Run getPhaseMap code
 % % % % % % % % % % % % %
-[ph_mod] = getPhasePref(basepath, 'epochs', run.epochs,'saveMat',true)
-
-
+[ph_mod] = getPhasePref(basepath, 'epochs', run.epochs,'freqRange',[5 10],'saveMat',true)
+[ph_mod] = getPhasePref(basepath, 'epochs', run.epochs,'freqRange',[39 50],'saveMat',true)
+[ph_portrait] = getPhasePortrait(basepath, 'epochs', run.epochs,'saveMat',true)
 
 % % % % % % % % % % % % %
 % % Summaryplots code with generating .mat files

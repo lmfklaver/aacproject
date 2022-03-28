@@ -32,10 +32,9 @@ function STP = ShortTermPlasticity(basepath,varargin)
 %   Code originially written by Sam Mckenzie
 %   2020/10 Code addapted/ edited by Kaiser Arndt (2020/07/12)
 %   2021/02 Lianne documented and edited this code further
-%
-%   TO-DO
-%   - Make kp definition and input dependent on the optogenetic manipulation
-%   - Doesnt only have to be for axax only?
+%   2022/03 Earl addeed code to find ACGs of non-monosynaptically connected
+%   PYR in this session and monosynaptically connected in this session
+
 
 %% Parse!
 %
@@ -143,8 +142,28 @@ else
 end
 STP.kp = {kp};
 
-
-
+%find non-monosynaptically connected PYR and monosynaptically connected Pyr
+%to get average for plots
+load([basename '_celltypes.mat']);
+notprepyrs=[];
+allpresynci=[];
+notprepyrs=pyrs;
+for iaac=aacs;
+    presyni=find(STP.mono_con(:,2)==iaac);
+    presync=STP.mono_con(presyni,1);
+    [rows,cols,vals]=find(pyrs==presync);
+    allpresynci=[allpresynci cols'];
+end
+uniquepresynci=unique(allpresynci);
+notprepyrs(uniquepresynci)=[];
+STP.not_mono_con_pyr=notprepyrs';
+acg_notpretoaac=[]
+iii=1
+for iPyr=1:length(notprepyrs)
+    acg_notpretoaac(iii,:)  = mono_res.prob_noncor(:,notprepyrs(iPyr),notprepyrs(iPyr)); % ACG of presynaptic cells
+    iii=iii+1
+end
+STP.not_mono_con_to_aac_acg=acg_notpretoaac
 %%
 %save all variable to output file
 if saveMat

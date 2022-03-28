@@ -20,7 +20,8 @@ dirN  = {...
     'D:/Data/AxoAxo/mouse6/mouse6_190330';...%14
     'D:/Data/AxoAxo/mouse6/mouse6_190331';...%15
     'D:\Data\Axoaxo\u19_200310_135409';...%16
-    'D:\Data\Axoaxo\u19_200313_155505';};...%17
+    'D:\Data\Axoaxo\u19_200313_155505';...%17
+    'D:\Data\sorting\m217\m217_201027_103818'};...%18
 
     
 

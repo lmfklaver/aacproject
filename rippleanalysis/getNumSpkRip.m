@@ -1,4 +1,4 @@
-function [spikesRipNum, numSpkPerCycPerRip] = getNumSpkRip(basepath, varargin)
+function [ripspikes] = getNumSpkRip(basepath, varargin)
 %
 %
 %
@@ -25,7 +25,7 @@ function [spikesRipNum, numSpkPerCycPerRip] = getNumSpkRip(basepath, varargin)
 %   [spikesRipNum, numSpkPerCycPerRip] = getNumSpkRip(basepath,'units',aacs,'saveMat',true);
 %
 %   NOTES
-%
+%   2/2022 Added Spikes per rip code EG
 %
 %   TO-DO
 %   - include part before first peak and after last peak
@@ -57,21 +57,28 @@ cd(basepath)
 cd(basepath)
 basename = bz_BasenameFromBasepath(basepath);
 load([basename '.ripples.events.mat']);
-load([basename '.spikes.cellinfo.mat'],'spikes')
-
+load([basename '.spikes.cellinfo.mat'],'spikes');
+load([basename '.optoStim.manipulation.mat']);
+load([basename '_celltypes.mat']);
+pulseEpochs = optoStim.timestamps;
 
 fils  = getAllExtFiles(basepath,'rip',1);
 rip = LoadEvents(fils{1});
-
+gd_eps=get_gd_eps(basepath);
+[status,interval]=InIntervals(ripples.peaks(:,1),gd_eps);
+ripstart=ripples.timestamps(:,1);
+ripend=ripples.timestamps(:,2);
+gdrips(:,1) = ripstart(status);
+gdrips(:,2) = ripend(status);
 % pulls the channel from the ripples and loads the xml file
 rippleChan = str2double(rip.description{1}(regexp(rip.description{1},'[0-9]')));
 lfp = bz_GetLFP(rippleChan);
 lfp_ripple = BandpassFilter(double(lfp.data), sampleRate ,ripfrequency);
 
-[~,intervalLFP] =InIntervals(lfp.timestamps, ripples.timestamps);
+[~,intervalLFP] =InIntervals(lfp.timestamps, gdrips);
 
 % find spikes in ripples
-[~, interval] = cellfun(@(a) InIntervals(a, ripples.timestamps), spikes.times,'UniformOutput', false);
+[~, interval] = cellfun(@(a) InIntervals(a, gdrips), spikes.times,'UniformOutput', false);
 
 % clear spikesRip*
 % unsure if right dimensions
@@ -87,7 +94,7 @@ end
 % % % % Number of Spikes in the ripple
 
 for iUnit = units
-    for iRip = 1:length(ripples.timestamps)
+    for iRip = 1:length(gdrips)
         if ~isempty(sum(interval{iUnit}==iRip))
             spikesRip{iUnit}{iRip} = length(spikes.times{iUnit}(interval{iUnit}==iRip));
         end
@@ -105,9 +112,9 @@ end
 for iUnit = units
     
     selSpkTimes = spikes.times{iUnit};
-    cycleEp = cell(length(ripples.timestamps),1);
+    cycleEp = cell(length(gdrips),1);
     %
-    for iRip = 1:length(ripples.peaks)
+    for iRip = 1:length(gdrips)
         
         % pick lfp per ripple
         selRip      = lfp_ripple(intervalLFP==iRip);
@@ -123,12 +130,12 @@ for iUnit = units
 %         clear cycleEpoch
         cycleEpoch = cell(length(numPeaks),1);
         
-        cycleEpoch{1} = [ripples.timestamps(iRip,1),peakTime(1)];
+        cycleEpoch{1} = [gdrips(iRip,1),peakTime(1)];
         for iPk = 1:numPeaks-1
             cycleEpoch{iPk+1}  = [peakTime(iPk) peakTime(iPk+1)];
         end
         
-        cycleEpoch{end+1} = [peakTime(end),ripples.timestamps(iRip,end),];
+        cycleEpoch{end+1} = [peakTime(end),gdrips(iRip,end),];
         cycleEp{iRip}    = cell2mat(cycleEpoch);
         
         
@@ -153,6 +160,39 @@ for iUnit = units
     end
 end
 
+[peakInPulse, pulseWithRip] = findRipplesInPulse(ripples, pulseEpochs);
+
+for iUnit = units
+    [status,interval] = InIntervals(spikes.times{iUnit},ripples.timestamps(peakInPulse,:));
+    v = 1:length(ripples.timestamps);
+    %RipOutsidePulse = ~ismember(v,RippeakInPulse);
+    [statusNO,intervalNO] = InIntervals(spikes.times{iUnit},gdrips); %gdrips changed from RipOutsidePulse
+    RipParticipationON{iUnit}=status;
+    RipParticipationOFF{iUnit}=statusNO;
+    % per ripple
+    uniqueInts=unique(interval(interval~=0))';
+    if isempty(uniqueInts);
+    numSpkperRip_ONper(iUnit,(1:size(numSpkperRip_ONper,2)))=0;
+    else
+        for iInterval = unique(interval(interval~=0))';
+            numSpkperRip_ONper(iUnit,iInterval) = sum(length(find((interval==iInterval))));
+            end
+        end
+        for iIntervalNO = unique(intervalNO(intervalNO~=0))';
+            numSpkperRip_OFFper(iUnit,iIntervalNO) = sum(length(find((intervalNO==iIntervalNO))));
+        end
+        numSpkperRip_ON(iUnit) = mean(numSpkperRip_ONper(iUnit));
+        numSpkperRip_OFF(iUnit) = mean(numSpkperRip_OFFper(iUnit));
+    % gemiddelde spikes per ripple, opslaan numSpks per rip?    
+end
+ripspikes.numSpkPerCycPerRip = numSpkPerCycPerRip;
+ripspikes.spikesRipNum = spikesRipNum;
+ripspikes.numSpkperRip_ON=numSpkperRip_ONper;
+ripspikes.numSpkperRip_OFF=numSpkperRip_OFFper;
+ripspikes.avgSpkPerRip_ON=numSpkperRip_ON;
+ripspikes.avgSpkPerRip_OFF=numSpkperRip_OFF;
+ripspikes.RipParticipation_ON= RipParticipationON;
+ripspikes.RipParticipation_OFF= RipParticipationOFF;
 if saveMat
-    save([basename '.ripspikes.analysis.mat'],'numSpkPerCycPerRip','spikesRipNum');
+    save([basename '.ripspikes.allripinstim.analysis.mat'],'ripspikes');
 end
