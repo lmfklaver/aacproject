@@ -62,6 +62,7 @@ addParameter(p,'saveMat',true,@islogical);
 addParameter(p,'binSize',0.01,@isnumeric);
 addParameter(p,'epochs',0.01,@isnumeric);
 addParameter(p,'saveAs','.peth.mat',@isstr);
+addParameter(p,'long',false,@islogical);
 
 parse(p,varargin{:});
 basename        = p.Results.basename;
@@ -70,11 +71,16 @@ saveMat         = p.Results.saveMat;
 binSize         = p.Results.binSize;
 epochs          = p.Results.epochs;
 saveAs          = p.Results.saveAs;
-
+long            = p.Results.long;
 %%
 cd(basepath)
 load([basename '.spikes.cellinfo.mat'],'spikes')
 
+%warn to use realignspikeslong
+totallength=timwin(2)-timwin(1);
+if totallength>=2 && long == false
+    warning('Time window may contain multiple events, consider using realignSpikesLong, long = true')
+end
 % Set parameters for PETHs
 timeEdges   = timwin(1):binSize:timwin(2);
 
@@ -87,9 +93,11 @@ trlCenteredEpochStop    = epochs(:,1)+timeAfter;
 trlCenteredEpoch = [trlCenteredEpochStart trlCenteredEpochStop];
 
 % Align the spikes to be centered around epoch start
-
+if long
+    spike_toEpochStart = realignSpikesLong(spikes, trlCenteredEpoch);
+else
 spike_toEpochStart = realignSpikes(spikes, trlCenteredEpoch);
-
+end
 % Calculate PETH centered around epoch start
 
 peth.rate    = zeros(length(spikes.times), length(timeEdges)-1);

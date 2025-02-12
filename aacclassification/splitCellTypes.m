@@ -54,7 +54,7 @@ stimrate = rate.stim;
 % update, because not all folders with "mouse" are ChR mice anymore with
 % padded sessions.
 
-if ~isempty(regexp(basename,'mouse', 'once')) % mouse-mice are excitation
+if ~isempty(regexp(basename,'2017', 'once')) % mouse-mice are excitation
     dblZetaPChR     = zeta.P;%dblZetaPChR100;
     
     for iUnit= 1:length(baserate)

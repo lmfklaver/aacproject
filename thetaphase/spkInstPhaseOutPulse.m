@@ -55,8 +55,8 @@ basename = bz_BasenameFromBasepath(basepath);
 load([basename  '.STP.mat']);
 load([basename '.optoStim.manipulation.mat']);
 load([basename '.ripples.events.mat'],'ripples');
-load([basename '.run.states.mat']);
-ripChan      = ripples.detectorinfo.detectionchannel;
+load([basename '.thetaEpochs.states.mat']);
+ripChan      = ripples.detectorinfo.detectionparms.channel;
 [gd_eps]     =  get_gd_eps(basepath);
 
 
@@ -95,7 +95,7 @@ for iUnit = 1:length(spikes.times);
 end 
 
 %make run.epochs an input
-[status, interval] = cellfun(@(a) InIntervals(a, run.epochs),spikes.nopulse, 'uni',false);           
+[status, interval] = cellfun(@(a) InIntervals(a, thetaEpochs.thetanoripintervals),spikes.nopulse, 'uni',false);           
 for iUnit = icell;
     spikes.runandgood{iUnit} = spikes.times{iUnit}(status{iUnit});
 end

@@ -14,7 +14,7 @@ p = inputParser;
 addParameter(p,'basename',basename,@isstring);
 addParameter(p,'saveMat',true,@islogical);
 addParameter(p,'saveAs','.gd_eps.mat',@isstring);
-addParameter(p,'secToBaseline',60,@isnumeric);
+addParameter(p,'secToBaseline',1,@isnumeric);
 
 parse(p,varargin{:});
 basename        = p.Results.basename;
@@ -25,6 +25,7 @@ secToBaseline   = p.Results.secToBaseline;
 cd(basepath)
 %%
 load([basename '.optoStim.manipulation.mat']);
+lfp = bz_GetLFP('all');
 st = optoStim.timestamps;
 
 % This then finds "good episodes" not sure how good this section is, also
@@ -39,7 +40,14 @@ if any(kp1>1)
 elseif kp1==1
     gd_eps = [0 st(1,1)];
 end
-
+if gd_eps(end)==inf
+   gd_eps(end)=lfp.duration
+else
+    if gd_eps(end)~=lfp.duration
+        endofwindow=[optoStim.timestamps(end), lfp.duration]
+        gd_eps=[gd_eps;endofwindow]
+    end
+end
 if saveMat
     save([basename saveAs],'gd_eps')
 end

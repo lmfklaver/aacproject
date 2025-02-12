@@ -61,7 +61,7 @@ addParameter(p,'saveMat',false,@islogical);
 addParameter(p,'saveAs','.ph_portrait.analysis.mat');
 addParameter(p,'nfreq',25,@isnumeric);
 addParameter(p,'freqRange',[1 250],@isnumeric);
-addParameter(p,'freqspace','log',@isstr);
+addParameter(p,'freqspace','lin',@isstr);
 addParameter(p,'muaThres',0.05,@isnumeric);
 addParameter(p,'nPhaseBins',32,@isnumeric);
 addParameter(p,'epochs',[],@isnumeric);
@@ -83,7 +83,7 @@ cd(basepath)
 %% Load dependencies
 load([basename '.gd_eps.mat'],'gd_eps')
 load([basename '.ripples.events.mat'],'ripples')
-ripChan      = ripples.detectorinfo.detectionchannel;
+ripChan      = ripples.detectorinfo.detectionparms.channel  ;
 
 load([basename '.STP.mat'])
 
@@ -184,11 +184,12 @@ for iFreq = 1:nfreq-1
         for iUnit = 1:length(spikes.times)
            
             % first only take spikes within specified epochs
+            if ~isnan(epochs)
             if ~isempty(epochs)
                 [status] = InIntervals(spikes.times{iUnit}, epochs);
                 spikes.times{iUnit} = spikes.times{iUnit}(status);
             end
-            
+            end
             %only take spikes outside of gd_eps (no stim periods)
             [status] = InIntervals(spikes.times{iUnit},gd_eps);
             
@@ -201,8 +202,11 @@ for iFreq = 1:nfreq-1
             ref  =spikes.times{iUnit}(status);
             
             spk_ph =   interp1(filtered.timestamps, filtered.phase,ref,'nearest');
-           [spk_ph_cnt,spk_ph_bin] = histc(spk_ph,ph_bin);
+            [spk_ph_cnt,spk_ph_bin] = histc([spk_ph;NaN],ph_bin); %soft fix for a cell with a single spike
+            if sum(spk_ph_cnt)>0                
             ph_rate(iFreq,:,iUnit) = spk_ph_cnt./occupancy_bin;
+            else
+                continue
 %             spk_ph_bin(iFreq,:,iUnit) = spk_ph_bin;
 
 
@@ -267,7 +271,7 @@ end
 %% Condense into output
 
 ph_portrait.ph_rate          = ph_rate;
-ph_portrait.ph_map           = ph_map; % this is the transmission probability. See line 209
+%ph_portrait.ph_map           = ph_map; % this is the transmission probability. See line 209
 ph_portrait.ph_bin           = ph_bin;
 ph_portrait.freq             = freq;
 ph_portrait.nfreq            = nfreq;

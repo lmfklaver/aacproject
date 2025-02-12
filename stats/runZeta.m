@@ -1,4 +1,4 @@
-function zeta = runZeta(basepath,event, varargin)
+function zeta = runZeta(basepath,event, spikes,varargin)
 % This function is designed to 
 %
 %   USAGE
@@ -59,9 +59,9 @@ unitsValidation = @(x) isnumeric(x) || strcmp(x,'all');
 p = inputParser;
 addParameter(p,'basename',basename,@isstring);
 addParameter(p,'saveMat',false,@islogical);
-addParameter(p,'saveAs','.pethzeta.stats.mat',@isstring);
-addParameter(p,'timeBefore',0.1,@isnumeric);
-addParameter(p,'timeAfter',0.02,@isnumeric); % 
+addParameter(p,'saveAs','.pethzeta.stats.mat',@isstr);
+addParameter(p,'timeBefore',0.4,@isnumeric);
+addParameter(p,'timeAfter',0.1,@isnumeric); % 
 addParameter(p,'units','all', unitsValidation); % 
 
 
@@ -78,7 +78,6 @@ totalDurWin     = timeBefore + timeAfter;
 cd(basepath)
 %%
 % Load Spikes
-spikes = bz_LoadPhy;
 
 %%
 if isnumeric(units)
@@ -91,13 +90,13 @@ for iUnit = selUnits
     %interval check
     [status,~] = InIntervals(spikes.times{iUnit},[event-timeBefore event-timeBefore+totalDurWin]);
     if sum(status~=0)
-        [dblZetaP(iUnit),vecLatencies(iUnit,:), sZETA{iUnit},sRate{iUnit}] = getZeta(spikes.times{iUnit},event-timeBefore,totalDurWin,[],0);
+        [dblZetaP(iUnit),~, sZETA{iUnit},sRate{iUnit}] = getZeta(spikes.times{iUnit},event-timeBefore,totalDurWin,[],0);
     end
     
 end
 
 zeta.P              = dblZetaP;
-zeta.vecLatencies   = vecLatencies;
+zeta.vecLatencies   = [];
 zeta.sZeta          = sZETA;
 zeta.sRate          = sRate;
 zeta.UID            = spikes.UID;

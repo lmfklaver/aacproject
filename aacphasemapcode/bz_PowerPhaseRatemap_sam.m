@@ -32,7 +32,7 @@ addParameter(p,'ints',[0 Inf],@isnumeric)
 addParameter(p,'powernorm','Zlog')
 addParameter(p,'metric',[])
 addParameter(p,'Nspikethresh',10)
-addParameter(p,'jittersig',false,@islogical)
+addParameter(p,'jittersig',true,@islogical)
 addParameter(p,'cellsToJitter',spikes.UID,@isnumeric)
 addParameter(p,'numbins',20,@isnumeric)
 
@@ -51,7 +51,7 @@ instatespiketimes = cellfun(@(X) InIntervals(X,ints),...
 instateLFPtimes = InIntervals(filteredLFP.timestamps,ints);
 
 %%
-numcells = length(spikes.times);
+numcells = length(spikes.times); 
 %%
 
 %Normalize Power

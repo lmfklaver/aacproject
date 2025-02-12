@@ -92,19 +92,6 @@ ph_pref =[];
 % else
 % selBins(end) = []; %why
 
-%     for iSelBin = 1:length(selBins)
-%         selfreqbin = selBins(iSelBin);
-%         ph_rate1 = ph_mod.ph_rate;
-%
-%         for iUnit = 1:size(ph_rate1,3)
-%             y = ph_rate1(:,:,iUnit);
-%             rvect = nanmean(y(selfreqbin,:) .*exp(1i .* ph_mod.ph_bin)); %
-%             ph_pref_temp(:,iUnit,iSelBin) = atan2(imag(rvect),real(rvect));
-%             ph_pref_temp(:,iUnit,iSelBin) =
-%         end
-
-%         ph_pref = squeeze(mean(ph_pref_temp,3));
-% end
 selBins = find(ph_mod.freq>=freqRange(1) & ph_mod.freq<=freqRange(2));
         ph_rate1 = ph_mod.ph_rate;
 
@@ -117,18 +104,22 @@ selBins = find(ph_mod.freq>=freqRange(1) & ph_mod.freq<=freqRange(2));
 
         ph_pref = ph_pref_temp;
 
-% for iUnit = 1:size(ph_mod.ph_rate,3)
-%     ph_map_squeeze(iUnit) = squeeze(nanmean(ph_mod.ph_rate,3));
-%     [~, maxInd] = max(ph_map_squeeze(iUnit));
-%     ph_pref(iUnit) = ph_mod.ph_bin(maxInd);
-%     
-% end
+
+for iSelBin = 1:length(selBins)-1
+    selfreqbin = selBins(iSelBin);
+    ph_rate1 = ph_mod.ph_rate;
+
+    for iUnit = 1:size(ph_rate1,3)
+        y = ph_rate1(:,:,iUnit);
+        rvect = nanmean(y(selfreqbin,:) .*exp(1i .* ph_mod.ph_bin)); %
+        ph_pref_temp1(:,iSelBin,iUnit) = sqrt(imag(rvect)^2+real(rvect)^2);
+    end
 
 
-
-
+end
+ph_pref_1 = squeeze(mean(ph_pref_temp1,2));
 ph_mod.ph_pref          = ph_pref;
-% ph_mod.mod              = ;
+ph_mod.mod              = ph_pref_1;
 ph_mod.ph_freq          = ph_mod.freq(selBins);
 
 
@@ -138,17 +129,17 @@ if saveMat
     fileName = ['.ph_mod_' num2str(ph_mod.freq(1)) '_' num2str(ph_mod.freq(end)) 'Hz.mat'];
     fphm = fullfile(basepath,[basename,fileName]);
     
-    if exist(fphm,'file')
-        overwrite = input([basename,fileName, ' already exists. Overwrite? [Y/N] '],'s');
-        switch overwrite
-            case {'y','Y'}
-                delete(fphm)
-            case {'n','N'}
-                return %% LK: Unsure if a return is appropriate or if this should be a break
-            otherwise
-                error('Y or N please...')
-        end
-    end
+%     if exist(fphm,'file')
+%         overwrite = input([basename,fileName, ' already exists. Overwrite? [Y/N] '],'s');
+%         switch overwrite
+%             case {'y','Y'}
+%                 delete(fphm)
+%             case {'n','N'}
+%                 return %% LK: Unsure if a return is appropriate or if this should be a break
+%             otherwise
+%                 error('Y or N please...')
+%         end
+%     end
     
     save([basename fileName], 'ph_mod')
     

@@ -1,4 +1,4 @@
-function [ripple_ccg] = getRipCCG(basepath,spikes,varargin)
+function [ripple_ccgSTIM] = getRipCCGSTIM(basepath,spikes,varargin)
 
 %   USAGE
 %
@@ -57,11 +57,6 @@ ccgtotsamples = p.Results.ccgtotsamples;
 
 
 %%
-if isempty(gd_eps)
-    disp('No gd_eps')
-    % OR: gd_eps is entire session
-end
-
 
 % Get ripple CCGs
 cid = [];
@@ -69,46 +64,27 @@ rip_ccg = [];
 NN = [];
 ix = 1;
 
-load([basename '.ripples.events.mat'])
-% rip = LoadEvents([basepath '/' basename '.evt.rip']);
-% t   = rip.time(cellfun(@any,regexp(rip.description,'start')));
-rips = ripples.timestamps(:,1);
+load([basename '.ripspikes.allripinstim.analysis.mat'])
 
-% % spikes = bz_LoadPhy
-for j = 1:length(spikes.times)
-    [status] = InIntervals(spikes.times{j},gd_eps);
-    selSpikes.times{j}=spikes.times{j}(status)
-    if isfield(spikes,'cluID')
-        cid = [cid;spikes.shankID(j) spikes.cluID(j)];
-    else
-        cid = [cid;spikes.shankID(j) spikes.UID(j)];
-    end
-end
-% %     Fs=1/30000;
-% % %    rip_ccg(ix,:) = CrossCorr(t,spikes.times{j}(status),ccgbin,ccgtotsamples)/length(t);
-% %     NN(ix) = sum(status);
-% %     ix = ix+1;
-% % end
-[status] = InIntervals(ripples.timestamps(:,1),gd_eps)
-rips = ripples.timestamps(status,1);
-selSpikes.times=[selSpikes.times {rips}]
+rips = ripspikes.ONrips.timestamps(:,1)
+selSpikes.times=[spikes.times {rips}]
 [rip_ccg, t] = CCG(selSpikes.times,[],'binSize',ccgbin,'duration',ccgdur,'norm','rate');
 
 
-ripple_ccg.ccg          = rip_ccg;
-ripple_ccg.binsize      = ccgbin;
-ripple_ccg.t            = t
-ripple_ccg.ccgdur       = ccgdur;
-ripple_ccg.ccglength    = ccgbin*(ccgdur); % for plotting
+ripple_ccgSTIM.ccg          = rip_ccg;
+ripple_ccgSTIM.binsize      = ccgbin;
+ripple_ccgSTIM.t            = t
+ripple_ccgSTIM.ccgdur       = ccgdur;
+ripple_ccgSTIM.ccglength    = ccgbin*(ccgdur); % for plotting
 
 
 %%
 if saveMat
     % Check if file exists:
-    fripccg = [basename '.ripple_ccg.mat'];
+    fripccg = [basename '.ripple_ccgSTIM.mat'];
     
     if exist(fripccg,'file')
-        overwrite = input([basename,'.ripple_ccg already exists. Overwrite? [Y/N] '],'s');
+        overwrite = input([basename,'.ripple_ccgSTIM already exists. Overwrite? [Y/N] '],'s');
         switch overwrite
             case {'y','Y'}
                 delete(fripccg)
@@ -119,7 +95,7 @@ if saveMat
         end
     end
     
-    save([basename '.ripple_ccg.mat'],'ripple_ccg')
+    save([basename '.ripple_ccgSTIM.mat'],'ripple_ccgSTIM')
 end
 
 end

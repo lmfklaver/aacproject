@@ -41,10 +41,10 @@ if ~exist('basepath','var')
 end
 
 basename = bz_BasenameFromBasepath(basepath);
-
+%load([basename '_analogin.mat'])
 
 p = inputParser;
-addParameter(p,'downsampleFactor',3000,@isnumeric); % change to 1/10th the samplingrate?
+addParameter(p,'downsampleFactor',5000,@isnumeric); % change to 1/10th the samplingrate?
 addParameter(p,'circDisk',2*pi*26,@isnumeric);
 addParameter(p,'smoothWin',2,@isnumeric); % in seconds
 addParameter(p,'doFigure',false,@islogical);
@@ -61,7 +61,7 @@ cd(basepath)
 pos     = analogin.pos;
 time    = analogin.ts;
 sr = analogin.sr;
-
+clear analogin
 % Smooth position (pos) for detection of slope, etc
 %%%%%%%%%%%% LOOK INTO THE WHY OF THIS %%%%%%%%%%%
 k   = normpdf([1:40],20,5); % 1-40 total range, 20 is with on either sides
@@ -71,27 +71,59 @@ if ~isempty(downsampleFactor) || downsampleFactor ~= 0
     pos     = downsample(pos, downsampleFactor); % in volt
     time    = downsample(time,downsampleFactor); % in seconds
 end
-
+pos = -movmean(pos,100);
 % 
 pos_scaled  = pos-min(pos);
 pos_in_cm   = pos_scaled*(circDisk)/max(pos_scaled); % normalize it to size of wheel
 
 % additive positions (roll-out-the-wheel)
-thr_diff    = 10*std(pos); % hardcoded
+thr_diff    = 5*std(pos); % hardcoded
 allidx      = find(abs(diff(pos_in_cm))> thr_diff); % is taking the wheel resets
 
-% determine pos to neg or neg to pos wheel
-[~, trP_idx] = findpeaks(pos, 'MinPeakProminence', 1, 'MinPeakHeight', 1);
-[~, trN_idx] = findpeaks(-pos, 'MinPeakProminence', 1, 'MinPeakHeight', -1);
+%% Lap times workflow
+thr_diff_cm = 5*std(diff(pos_in_cm));
+[~,peak]=findpeaks(diff(pos_in_cm),'MinPeakProminence', 1, 'MinPeakHeight', thr_diff_cm);
+yval(1:length(peak))=max(pos_in_cm)+5;
+pos_in_cm=pos_in_cm';
+figure,
+plot(diff(pos_in_cm)), hold on, plot(pos_in_cm)
+scatter(peak,yval,'*','r')
+allpeaksidx=sortrows([peak;peak+1])';
+xvals=1:length(pos_in_cm);
+peaklog=zeros(size(xvals));
+peaklog(allpeaksidx)=1;
+peaklog=logical(peaklog);
+interpvals=interp1(xvals(~peaklog),pos_in_cm(~peaklog),xvals(peaklog),'nearest');
+pos_in_cm_fix=pos_in_cm;
+pos_in_cm_fix(allpeaksidx)=interpvals;
+figure,
+plot(pos_in_cm)
+hold on
+plot(pos_in_cm_fix)
+figure,
+thr_diff_fix = 10*std(diff(pos_in_cm_fix));
+[~,peakneg]=findpeaks(abs(-diff(pos_in_cm_fix)),'MinPeakHeight', thr_diff_fix,'Annotate','extents');
+plot(pos_in_cm_fix), hold on, 
+%plot(-diff(pos_in_cm_fix));
+yvalfix(1:length(peakneg))=min(diff(pos_in_cm))+5;
+scatter(peakneg,-yvalfix,'*','r');
+stpidx=peakneg(2:end)';
+stridx=(peakneg(1:end-1)+1)';
+laps.startstoptime(:,1)=time(stridx)';
+laps.startstoptime(:,2)=time(stpidx)';
 
-if trN_idx(1) - trP_idx(1) == 1
-    trN_idx = [];
-elseif trP_idx(1) - trN_idx(1) == 1
-    trP_idx = [];
-end
+%% determine pos to neg or neg to pos wheel
+% [~, trP_idx] = findpeaks(pos, 'MinPeakProminence', .1, 'MinPeakHeight', .1);
+% [~, trN_idx] = findpeaks(-pos, 'MinPeakProminence', .1, 'MinPeakHeight', -.1);
+% 
+% if trN_idx(1) - trP_idx(1) == 1
+%     trN_idx = [];
+% elseif trP_idx(1) - trN_idx(1) == 1
+%     trP_idx = [];
+% end
 
-posToNeg = trN_idx(1)-trP_idx(1)> 1;%pos(trP_idx(1))> pos(trP_idx(1)+1); % this means that the position value decreases
-negToPos = trP_idx(2)-trN_idx(1)> 1;%pos(trP_idx(1))< pos(trP_idx(1)+1);
+posToNeg = 1%(trN_idx(1)-trP_idx(1))> 1;%pos(trP_idx(1))> pos(trP_idx(1)+1); % this means that the position value decreases
+negToPos = 0%(trP_idx(2)-trN_idx(1))> 1;%pos(trP_idx(1))< pos(trP_idx(1)+1);
 
 
 
@@ -100,18 +132,18 @@ if  posToNeg
 
         if allidx(idx) < allidx(end)
             pos_in_cm(allidx(idx)+1:allidx(idx+1)) = ...
-                pos_in_cm(allidx(idx)+1:allidx(idx+1)) -  ...
-                ((pos_in_cm(allidx(idx)+1) - pos_in_cm(allidx(idx))));
+                pos_in_cm_fix(allidx(idx)+1:allidx(idx+1)) -  ...
+                ((pos_in_cm_fix(allidx(idx)+1) - pos_in_cm_fix(allidx(idx))));
 
         elseif allidx(idx) == allidx(end)
             pos_in_cm(allidx(idx)+1:end) = ...
-                pos_in_cm(allidx(idx)+1:end) - ...
-                ((pos_in_cm(allidx(idx)+1) - pos_in_cm(allidx(idx))));
+                pos_in_cm_fix(allidx(idx)+1:end) - ...
+                ((pos_in_cm_fix(allidx(idx)+1) - pos_in_cm_fix(allidx(idx))));
         end
         
     end
     
-    vel_cm=abs(diff(pos_in_cm*-1));
+    vel_cm=abs(diff(pos_in_cm_fix*-1));
     
       
 elseif negToPos
@@ -119,12 +151,12 @@ elseif negToPos
     for idx = 1:length(allidx)
         if allidx(idx) < allidx(end)
             pos_in_cm(allidx(idx)+1:allidx(idx+1)) =...
-                pos_in_cm(allidx(idx)+1:allidx(idx+1)) + ...
-                pos_in_cm(allidx(idx));
+                pos_in_cm_fix(allidx(idx)+1:allidx(idx+1)) + ...
+                pos_in_cm_fix(allidx(idx));
         else
             pos_in_cm(allidx(idx)+1:end) = ...
-                pos_in_cm(allidx(idx)+1:end)+ ...
-                pos_in_cm(allidx(idx));
+                pos_in_cm_fix(allidx(idx)+1:end)+ ...
+                pos_in_cm_fix(allidx(idx));
         end
     end
     vel_cm = abs(diff(pos_in_cm));
@@ -144,7 +176,7 @@ if doFigure
     figure
     subplot(4,1,1), plot(time, pos)
     title('Raw')
-    subplot(4,1,2) ,plot(time,pos_in_cm)
+    subplot(4,1,2) ,plot(time,pos_in_cm_fix)
     title('cumulative pos')
     subplot(4,1,3),plot(time(2:end), vel_cm)
     title('vel_cm')
@@ -158,7 +190,24 @@ vel.vel_cm_s = vel_cm_s;
 vel.time = time;
 vel.dt = dt;
 
+for i=1:length(stridx)
+laps.timestamps{i}=time(stridx(i):stpidx(i));
+laps.pos{i} = pos_in_cm_fix(stridx(i):stpidx(i));
+laps.vel{i} = vel_cm_s(stridx(i):stpidx(i));
+laps.pos_in_cm=pos_in_cm_fix;
+end
+vel.laps=laps
+for i=1:length(vel.laps.pos)
+    vel.laps.posfilt{i}=sgolayfilt(vel.laps.pos{i},0,1);
+end
+figure, hold on,
+for i=1:length(vel.laps.pos)
+    plot(vel.laps.pos{i});
+   plot(vel.laps.posfilt{i});
+end
 
+vel.laps=laps
+save([basename '.vel.mat'],'vel')
 end
 
 

@@ -65,13 +65,15 @@ dt          = vel.dt;
 %%
 
 logicRb = vel_cm_s > thr;
-diff_Rb = diff(logicRb); %this is not correct alaways goes from -1 directly to 1
+diff_Rb = diff(logicRb); %this is not correct alaways goes from -1 directly to 1 %not true with newest run, maybe need to change back
 
 % what if recording starts running: startIdx = first timestamp
 
 %% finding start and stop of running epochs
-runStartIdx = find(diff_Rb==1)+1;
-runStopIdx = find(diff_Rb==-1)+1;
+runStartIdx=[]
+runStopIdx=[]
+runStartIdx = find(diff_Rb==1);%if changing line 68, add +1
+runStopIdx = find(diff_Rb==-1);%if changing line 68, add +1
 
 StartorStop = diff_Rb(diff_Rb~=0);
 if ~isempty(runStartIdx)
@@ -79,7 +81,7 @@ if ~isempty(runStartIdx)
         runStartIdx = [1 runStartIdx];
     end
     if diff_Rb(end) == 0 && StartorStop(end) ==1
-        runStopIdx=  [runStopIdx length(logicRb)];
+        runStopIdx=  [runStopIdx length(logicRb)]; %changed concat because it is a horz row
     end
     
     %%_____Reagan______________
@@ -87,9 +89,12 @@ if ~isempty(runStartIdx)
     if length(runStartIdx) > length(runStopIdx)
         runStopIdx(end+1) = max(time);
     end
+    if length(runStopIdx) > length(runStartIdx)
+        runStartIdx = [1; runStartIdx]
+    end
     %___________________________
     
-    runIdx = [runStartIdx' runStopIdx'];
+    runIdx = [runStartIdx; runStopIdx];
     runEpochs = [time(runStartIdx)' time(runStopIdx)'];
 else
     runEpochs = [NaN NaN];
