@@ -15,13 +15,13 @@ dirN  = {...
     'D:/Data/Sorting/mouse5/mouse5_181112b';...%10 ChR2
     'D:/Data/Sorting/mouse5/mouse5_181116';...%11 ChR2 %200ms stims
     'D:/Data/Sorting/mouse6/mouse6_190331';...%12 ChR2
-    'D:\Data\Sorting\u19\u19_200313_155505';...%13 Arch
-    'D:/Data\sorting/m217/m217_201027_103818';...%14 Arch
-    'D:/Data\sorting/m217/m217_201027_174922';...%15 Arch
-    'D:/Data\Sorting/m219/m219_201109_125609';...%16 Arch
-    'D:/Data\Sorting/m218/m218_201106_102900';...%17 Arch
-    'D:\Data\Sorting\m231\m231\m231_201120_094939';...%18 ChR2 %300ms stims
-    'D:\Data\Sorting\m231\m231\m231_201121_130915';...%19 ChR2 %300ms stims
+    'D:\Data\Sorting\u19\u19_200313_155505';...%13 Arch %Injected2/17/20
+    'D:/Data\sorting/m217/m217_201027_103818';...%14 Arch %Injected9/3/20
+    'D:/Data\sorting/m217/m217_201027_174922';...%15 Arch %Injected9/3/20 
+    'D:/Data\Sorting/m219/m219_201109_125609';...%16 Arch %Injected9/3/20
+    'D:/Data\Sorting/m218/m218_201106_102900';...%17 Arch %Injected9/3/20
+    'D:\Data\Sorting\m231\m231\m231_201120_094939';...%18 ChR2 %300ms stims %Injected10/25/20
+    'D:\Data\Sorting\m231\m231\m231_201121_130915';...%19 ChR2 %300ms stims %Injected10/25/20
     'D:\Data\Sorting\m418\m418_230523_144934';...%20, CCK Session Arch
     'D:\Data\Sorting\m418\m418_230526_131045';...%21, CCK Session Arch
     'D:\Data\Sorting\m418\m418_230602_140548';...%22, CCK Session Arch

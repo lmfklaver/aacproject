@@ -1,5 +1,9 @@
 %%%%%%% Session IN %%%%%%
 
+%This step is needed because there is a redundancy in the tSNE function in
+%buzcode and in cell explorer, if you run this as a single script, you need
+%to remove the buzcode tSNE function from path to successfully run cell
+%explorer, also it adds some necessary packages
 buzcodePath = 'C:\Users\English-Admin\OneDrive - Virginia Tech\Documents\GitHub\buzcode';
 tsnebuzPath = 'C:\Users\English-Admin\OneDrive - Virginia Tech\Documents\GitHub\buzcode\externalPackages\tSNE_matlab';
 cellExplorerPath = 'C:\Users\English-Admin\OneDrive - Virginia Tech\Documents\GitHub\CellExplorer';
@@ -9,62 +13,22 @@ aacprojectPath = 'C:\Users\English-Admin\OneDrive - Virginia Tech\Documents\GitH
 addpath(genpath(buzcodePath))
 addpath(genpath(aacprojectPath))
 
+%Set basepath and basename per buzcode formatting
 basepath = cd; basename = bz_BasenameFromBasepath(basepath);
 
 % % % % % % % % % % % % %
 % % Kilosort
 % % % % % % % % % % % % %
-addpath(genpath('C:\Users\lklaver\Documents\GitHub\Kilosort2'))
-addpath(genpath('C:\Users\lklaver\Documents\GitHub\npy-matlab'))
-
-cd 'C:\Users\lklaver\Documents\GitHub\Kilosort2'
-% select preprocess master_ file and adapt config accordingly
 
 
 % Run through KS1
+% See C:\Users\English-Admin\OneDrive - Virginia Tech\EnglishLab\Users\Earl\Matlab\SpikeSorting_SuperFolder\KS1_Run_BatchTemp.m
 
-
-% % % % % % % % % % % % %
-% % Spikesort
-% % % % % % % % % % % % %
-
-basepath = cd; basename = bz_BasenameFromBasepath(basepath);
-load('rez.mat')
-%because these rez.ops paths are the wrong paths sometimes, make sure to
-%change them before running convert
-
-ks1path = 'D:\Data\mouse1earl\mouse1_180502a\Sorting\Kilosort_2018-06-08_161030';
-
-rez.ops.basepath = basepath; 
-rez.ops.basename = basename; 
-rez.ops.savepath = fullfile(ks1path);
-% rez.ops.savepath = [ks1path filesep 'ClusResFetSpk'];
-
-save('rez.mat', 'rez')
-
-if ~exist(rez.ops.savepath)
-    mkdir(rez.ops.savepath)
-end
-
-savepath=rez.ops.savepath;
-rezToPhy_KSW(rez,savepath);
-PhyAutoClusterCleanup(savepath);
-% Copy XML into folder  (Provided that Klusters overwrites the "Units"
-% section of the XML
-% Error - no spike groups - copy anatomical groups to spike groups, 48/24/3
-% Alternatively: Copy CluResFet into basepath first and then continue from
-% there. 
-
-% Manually sort in Klusters (from basepath preferably). 
-
-% Or in phy2)
-
-%%
 
 % % % % % % % % % % % % %
 % % Set Session Specific Parameters
 % % % % % % % % % % % % %
-
+%May or may not be necessary
 sessionInfo         = bz_getSessionInfo(cd);
 
 params.nChans       = sessionInfo.nChannels;
@@ -82,13 +46,6 @@ params.analoginCh.reward    = 9;
 
 params.RippleChan = 20;%% NB: MANUALLY SELECT RIP CHANNEL FROM DAT BECAUSE FINDBESTRIPCHAN SOMETIMES SUCKS
 
-% % % % % % % % % % % % %
-% % Set Analyses options
-% % % % % % % % % % % % %
-
-% options 
-% toggle
-
 
 % % % % % % % % % % % % %
 % % Preprocess LFP
@@ -105,31 +62,17 @@ lfp = bz_GetLFP('all');
 % % % % % % % % % % % % %
 % % Detect Ripples
 % % % % % % % % % % % % %
-%% Note to self - find opto stim times and manually remove 1-2ms ripples.peaks from rip epochs
 chanRip = 57; 
 [ripples] = bz_FindRipples(cd,chanRip,'durations',[30 250],...
     'thresholds',[.5 1], 'passband',[100 250], 'EMGThresh', 0.99,'saveMat',true);
-
-% chanRip = 4; 
-% [ripples] = bz_FindRipples(cd,chanRip,'durations',[30 250],...
-%     'thresholds',[.5 1], 'passband',[120 250], 'EMGThresh', 0.99,'saveMat',true);%,'restrict',[0 7.295400000000e+03]);
-% FixContaminationRipples
-%  time_window = 0.003;  % 5ms
-% % Find the indices of ripple time points within the time window of optostimulation time points
-% % overlap_indices1 = any(abs(ripples.peaks - optoStim.timestamps(:,1).') <= time_window, 2);
-% overlap_indices = any(abs(ripples.peaks - optoStim.timestamps(:,2).') <= time_window, 2);
-% unique(overlap_indices)
-% % overlap_indices=logical(overlap_indices1+overlap_indices2)
-% ripples.timestamps=ripples.timestamps(~overlap_indices,:);
-% ripples.peaks=ripples.peaks(~overlap_indices);
-% ripples.peakNormedPower=ripples.peakNormedPower(~overlap_indices);
-
-% ripples.detectorinfo.detectionparms.channel=ripples.detectorParams.channel
-% ripples.timestamps=ripples.times
+%RippleStats from buzcode
 ripplelfp = bz_GetLFP(ripples.detectorinfo.detectionparms.channel);
 rippleFilt = bz_Filter(ripplelfp, 'passband', [100 250]);
 rippleFilt.data = double(rippleFilt.data)*0.195;% convert to microvolts
 [ripples.maps,ripples.data,ripples.stats] = bz_RippleStats(rippleFilt.data,rippleFilt.timestamps,ripples);
+
+%Custom code for sharp wave detection - probably not well written, can
+%optimize
 SWChan=26
 ripples=findSWAmp(basepath,ripples,SWChan);
 [ripples.SW] = findSharpWaves('ripples',ripples,'rippleChannel',ripples.detectorinfo.detectionparms.channel,'SWChannel',SWChan)
@@ -137,73 +80,57 @@ save([basename '.ripples.events.mat'],'ripples');
 
 % Make sure you indeed have the highest ripple channel 
 % edit findPyramidalLayer.m
-%edit findRippleLayerChan
+% edit findRippleLayerChan
 
 % Redo bz_FindRipples if layer is not the same 
 % Note Well: If different ripple layer per shank - > multiple ripples.events.mats?
 
-% Check if Ripples are detected well
-checkRipEvtfile = dir('*evt.rip*');
-if isempty(checkRipEvtfile)
-    makeRipFile
-end
+% Check if Ripples are detected well in NeuroScope2
 
 
 % % % % % % % % % % % % %
 % % Load Spikes
 % % % % % % % % % % % % %
 
-% First make sure your cluresfetspk are inside the basepath with the xml
-% and datfile
-% make sure you comment out the default of grabbing a ks1path in
-% bz_GetSpikes
-
-
-%%TOGGLE%%
-%spikes = bz_LoadPhy; % if from phy output
 spikes=bz_LoadPhy_CellExplorer %_CE found in utilites from kaiser so CE will work
-%spikes = bz_GetSpikes('sortingMethod','clu'); % if from CluResFetSpk 
 
 % % % % % % % % % % % % %
 % % Detect Pulses
 % % % % % % % % % % % % %
-
-%cd(analogin_path) %don't think we use this anymore
 
 % % First get info of analogin
 rhdfilename = [basename '_info.rhd'];
 read_Intan_RHD2000_file_noprompt(rhdfilename)
 
 analogin_file   = [basename, '_analogin.dat'];
+%Depending on how experiment was done, you can assign numbers to pulseChan,
+%wheelChan, etc to create analogin.pulse analogin.wheel
 [analogin] = getAnaloginVals(basepath,'pulseChan',1); %Base 1
 
 
-%Soft fix for adding ts and sr to analogin struct
+%Right now we use the digitalin on the intan for pulses, it's more reliable
+%so this should work for future recording sessions
 fileinfo = dir([basename '_digitalin.dat']);
 num_samples = fileinfo.bytes/2; % uint16 = 2 bytes
 fid = fopen([basename '_digitalin.dat'], 'r');
 digital_word = fread(fid, num_samples, 'uint16')';
 fclose(fid);
-analogin.pulse = (bitand(digital_word, 2^6));
+analogin.pulse = (bitand(digital_word, 2^6)); %2^digital in channel number, ie if 2^6, pulse was going to digitalin channel 6
+
+%Sanity check that you're pulling the right channel
 unique(analogin.pulse)
 plot(analogin.pulse)
 
+%Soft fix for hardcoding ts and sr to analogin struct
 sr=30000
 analogin.ts      = (1:length(analogin.pulse))/sr;
 analogin.sr      = sr;
 save([basename '_analogin.mat'],'analogin')
 
+
+%This detects the pulse epochs, there is some manual manipulation you may
+%need to do, read through this function carefully
 [pulseEpochs] = getPulseTimes(analogin); %% NB pulsethreshold needs to be set per recording
-
-% if params.saveMat
-%     save([basename '_pulseEpochs'], 'pulseEpochs')
-% end
-
-checkPulEvt = dir('*evt.ait*');
-
-if isempty(checkPulEvt)
-    makePulseFile
-end
 
 
 % % % % % % % % % % % % %
@@ -230,13 +157,10 @@ save([basename '.optoStim.events.mat'],'optoStim');
 % % % % % % % % % % % % %
 % % RUN things
 % % % % % % % % % % % % %
-
-%getVelocity
-%getRunEpochs ( 5cm/s)
-
+%Pulls out running data from analogin.pos
 minRunSpeed = 10
 minRunLength = 3
-[vel] = getVelocity(analogin,'doFigure',true,'downsampleFactor',3000);
+[vel] = getVelocity(analogin,'circDisk',2*pi*26,'doFigure',true,'downsampleFactor',3000);
 [run] = getRunEpochs(basepath,vel,'minRunSpeed',minRunSpeed,'saveMat',true,'saveAs','.run.states.mat');
 yval=[]
 yval(1:length(run.epochs(:,1)))=40
@@ -248,6 +172,7 @@ scatter(run.index(2,:),yval,'r*')
 % % % % % % % % % % % % %
 % % Run Behavior for Theta Cell Explorer
 % % % % % % % % % % % % %
+
 % Will need to define theta channel in CE and build this struct
 % basename.animal.behavior.mat where animal.speed and animal.time and sr
 
@@ -257,6 +182,8 @@ scatter(run.index(2,:),yval,'r*')
 basepath = cd
 addpath(genpath(cellExplorerPath))
 session = sessionTemplate(basepath,'showGUI',true);
+
+
 % Make sure that all of this session info is correct 
 % and append any session info you want to add: 
 % % % % % % % % % % % % % % % % % % % % % % % % % % % %
@@ -273,7 +200,7 @@ session = sessionTemplate(basepath,'showGUI',true);
 %     session.animal.probeImplants.ml_angle = []; % ml angle of probe implantation (degrees)
 %     session.animal.probeImplants.rotation = []; % rotation of probe (degrees)
 
-% % % load('Chanmap_uLED.mat')
+% % % load('chanMap.mat')
 % % z=sortrows([chanMap ycoords xcoords],1);
 % % chanCoords.x = z(:,3);
 % % chanCoords.y = z(:,2);
@@ -337,11 +264,29 @@ session = sessionTemplate(basepath,'showGUI',true);
 
 % Remove buzcode from your path
 rmpath(genpath(tsnebuzPath));
+% Run CellExplorer, 
+%NEED TO INCLUDE VERTICAL SPACING IN EXTRACELLULAR OR WILL FAIL
 cell_metrics = ProcessCellMetrics('session', session,'showGUI',true);
+
+
+% make sure it's all correct, and to also select "other metrics" to make
+% sure the optostim.manipulation.mat is excluded from calculating
+% burstiness etc. 
+
+% % % % % % % % % % % % %
+% % gd_eps
+% % % % % % % % % % % % %
+
+% Selects Epochs of time >x Seconds away from stimulation times. This is
+% important for optotagging experiments because we want to identify cells
+% through optotagging, but we want to study them outside of manipulation
+gd_eps=get_gd_eps(basepath);
+
 
 % % % % % % % % % % % % %
 % % Theta Modulation Index
 % % % % % % % % % % % % 
+%This script only selects spikes that occured during thetaEpochs
 basename=bz_BasenameFromBasepath(cd)
 load([basename '.spikes.cellinfo.mat'])
 load([basename '.run.states.mat'])
@@ -364,19 +309,14 @@ thetaModulationIndex=acg_metrics.thetaModulationIndex;
 save([basename '.thetamodulationindex.mat'],'thetaModulationIndex')
 addpath(genpath(buzcodePath))
 
-% make sure it's all correct, and to also select "other metrics" to make
-% sure the optostim.manipulation.mat is excluded from calculating
-% burstiness etc. 
 
-% % % % % % % % % % % % %
-% % gd_eps
-% % % % % % % % % % % % %
 
-gd_eps=get_gd_eps(basepath);
 
 % % % % % % % % % % % % %
 % % Cluster Quality
 % % % % % % % % % % % % %
+
+%Is a measure of quality of spike sorting
 [clusters] = getClusterQuality(basepath)
 save([basename '.ClusterQuality.analysis.mat'], 'clusters') ;
 
@@ -387,24 +327,25 @@ save([basename '.ClusterQuality.analysis.mat'], 'clusters') ;
 [ccginout] = getCCGinout(basepath, spikes, pulseEpochs); %gd_eps?
 
 
-%CellExplorer expects a variable name that matches the .states.mat 
-% In this case "run" should be "run5cm"
-
-%[selRunEpochs,vel,run]=PETHRun(analogin,basepath,minRunLength,minRunSpeed)
-
-%%%%Ask lianne PETHRun doesn't exist
-%selRunEpochsIdx = run.epochs(:,2)-run.epochs(:,1) >3; % longer than three seconds
-
 % % % % % % % % % % % % %
 % % Pulse PETH
 % % % % % % % % % % % % %
-[status]=InIntervals(optoStim.timestamps(:,1),thetaEpochs.intervals);
+% Peri-event time histogram aligned to start of stimulation
+
+% Leftover from looking at stims that happened during theta epochs, maybe
+% useful later but not relevant
+%[status]=InIntervals(optoStim.timestamps(:,1),thetaEpochs.intervals);
+
 [pulsepeth] = getPETH_epochs(basepath,'epochs',optoStim.timestamps(:,1),'timwin',[-1 1], ...
                'binSize', 0.01,'long',true);
 save([basename '.pulsepeth.analysis.mat'], 'pulsepeth') ;
+
 % % % % % % % % % % % % %
 % % Ripple PETH
-% % % % % % % % % % % % %          
+% % % % % % % % % % % % %  
+% Peri-event time histogram aligned to peak of SPW-Rs that are contained in
+% gd_eps
+
 [status]=InIntervals(ripples.peaks,gd_eps);
 gd_ripplepeaks=ripples.peaks(status);
 [ripplepeth] = getPETH_epochs(basepath,'epochs',gd_ripplepeaks,'timwin',[-0.5 0.5], ...
@@ -413,16 +354,23 @@ save([basename '.ripplepeth.analysis.mat'], 'ripplepeth') ;
 
 % % % % % % % % % % % % %
 % % Ripple PETH
-% % % % % % % % % % % % %          
+% % % % % % % % % % % % %
+% Peri-event time histogram aligned to peak of SPW-Rs that are contained in
+% optoStim
+
 [status]=InIntervals(ripples.peaks,optoStim.timestamps);
 gd_ripplepeaks=ripples.peaks(status);
 [ripplepeth] = getPETH_epochs(basepath,'epochs',gd_ripplepeaks,'timwin',[-0.5 0.5], ...
                      'binSize', 0.01,'long',true);
-save([basename '.ripplepeth.analysis.mat'], 'ripplepeth') ;
+save([basename '.ripplepethOpto.analysis.mat'], 'ripplepeth') ;
 
 % % % % % % % % % % % % %
 % % RipCCG
 % % % % % % % % % % % % %
+% Similar to Ripple PETH, but instead is analysis of ripple ccg (think of a
+% ccg in spike sorting, but the ripple peaks are considered a spike) This
+% is the same output as a CCG function, but END is the CCGs to the ripples
+
 %[ripple_ccg_mac] = getRipCCG(basepath,spikes,'epochs',gd_eps,'ccgbin', 0.02,'ccgdur', .8);
 %[ripple_ccg_mic] = getRipCCG(basepath,spikes,'epochs',gd_eps,'ccgbin', 0.001,'ccgdur', .1);
 [ripple_ccg] = getRipCCGFixed(basepath,spikes,'epochs',gd_eps,'ccgbin', 0.001,'ccgdur', 1,'saveMat',false);
@@ -451,7 +399,7 @@ gdrips(:,2) = ripend(status);
 save([basename '.ripspikeCCG.analysis.mat'], 'ripspikeCCG')
 
 % % % % % % % % % % % % %
-% % Run ripmod code
+% % Run ripmod code %Defunct, use cell explorer instead
 % % % % % % % % % % % % %
 [ripmod] = getRipMod(basepath, spikes, 'epochs', gd_eps, 'ccg', ripple_ccg,'baseTime',[-0.4 -0.3],'baselineAroundPeak',[-.05 .05],'saveMat',true);
 %get stats
@@ -465,8 +413,9 @@ gdrips(:,2) = ripend(status)+.05;
 [Congdrips] = ConsolidateIntervals(gdrips)
 [SpikeLFPCouplingGdEps]=bz_GenSpikeLFPCoupling(spikes,lfp,'frange',[120 250],'nfreqs',1,'spikeLim',1000000,'cellclass',allcelltypes,'int',Congdrips,'channel',unique([ripples.detectorinfo.detectionparms.channel spikes.maxWaveformCh(aacs)]))
 save([basename '.SpikeLFPCouplingGdEps1F.mat'],'SpikeLFPCouplingGdEps')
+
 % % % % % % % % % % % % %
-% % Burstiness
+% % Burstiness % I think we just use cell explorer
 % % % % % % % % % % % % %
 [burstIndex] = burstinessMizuseki_epochs(basepath,spikes,'epochs',gd_eps,'saveMat',true)
 
@@ -476,6 +425,7 @@ save([basename '.SpikeLFPCouplingGdEps1F.mat'],'SpikeLFPCouplingGdEps')
 [zeta] = runZeta(basepath,optoStim.timestamps(:,1),'saveMat',true);
 % % [zetaSTIMRips] = runZeta(basepath,ripspikes.ONrips.timestamps(:,1),spikes,'saveMat',true);
 [zeta] = runZeta(basepath,ripspikes.OFFrips.timestamps(:,1),spikes,'saveMat',true,'saveAs','.ripzeta.stats.mat');
+
 % % % % % % % % % % % % %
 % % Cell Types
 % % % % % % % % % % % % %
@@ -577,7 +527,7 @@ legend(['P-value = ' num2str(pval)],'Mean theta phase')
 
 
 % % % % % %
-% % Run STP code
+% % Run STP code % We don't use
 % % % % % % % % % % % % %
 [STP] = ShortTermPlasticity(basepath,'saveMat',true);
 % % % % % % % % % % % % %
@@ -599,6 +549,9 @@ save([basename '.thetaEpochs.states.mat'],'thetaEpochs')
 [ph_mod] = getPhasePref(basepath, 'epochs', thetanorip,'freqRange',[39 50],'saveMat',true);
 [ph_portrait] = getPhasePortrait(basepath, 'epochs', thetanorip,'saveMat',true);
 [ph_portrait_rip] = getPhasePortrait(basepath,'saveMat',true,'saveAs','.ph_portrait_rip.analysis.mat');
+
+%%Hippo CookBook
+
 computePhaseModulation('excludeIntervals',optoStim.timestamps)
 
 % % % % % % % % % % % % %
@@ -612,6 +565,47 @@ title('ID Cluster Stim Ripples')
 figure,
 histogram(rankStats.rankClusters(logical(eventIDs)),'Normalization','Probability')
 title('ID Cluster Control Ripples')
+
+
+% % % % % % % % % % % % %
+% % Linear Mixed Model
+% % % % % % % % % % % % %
+
+predictors = {'cumul_FR_aac', 'cumul_abratio_aac', 'cumul_burstiness_aac', ...
+              'cumul_thetam_aac', 'cumul_ratepowercorr_aac', ...
+              'cumul_ripratepowcorrpremono', 'cumul_thetar_aac'};
+
+results = [];
+
+for i = 1:length(predictors)
+    predictor = predictors{i};
+    
+    % Keep rows where all required columns are not NaN
+    valid_rows = ~isnan(T.cumul_ripmodCE_aac) & ...
+                 ~isnan(T.(predictor)) & ...
+                 ~isnan(T.Mouse_ID) & ...
+                 ~isnan(T.Session_ID);
+             
+    T_clean = T(valid_rows, :);
+    
+    % Only run the model if there's enough data
+    if height(T_clean) > 10
+        formula = sprintf('cumul_ripmodCE_aac ~ %s + (1|Mouse_ID) + (1|Session_ID)', predictor);
+        lme = fitlme(T_clean, formula);
+        coef = lme.Coefficients;
+        pval = coef.pValue(2); % p-value of the predictor
+        rsq = lme.Rsquared.Adjusted;
+        results = [results; {predictor, pval, rsq, height(T_clean)}];
+    else
+        % Not enough data to fit model
+        results = [results; {predictor, NaN, NaN, height(T_clean)}];
+    end
+end
+
+results_table = cell2table(results, 'VariableNames', ...
+    {'Predictor', 'pValue', 'AdjRsquared', 'NumObservations'});
+disp(results_table)  
+
 % % % % % % % % % % % % %
 % % Summaryplots code with generating .mat files
 % % % % % % % % % % % % %
